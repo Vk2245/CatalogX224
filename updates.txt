@@ -1,0 +1,699 @@
+================================================================================
+  CatalogX — Product Intelligence Platform
+  Complete Project Reference Guide
+  Last Updated: 2026-08-16 18:55 IST
+================================================================================
+
+TABLE OF CONTENTS
+  1. What is CatalogX?
+  2. Architecture Overview
+  3. Tech Stack (with justifications)
+  4. AI-ML Module — Detailed Breakdown
+  5. Backend — Detailed Breakdown
+  6. Security Architecture
+  7. MCP Server
+  8. Data Flow (End-to-End)
+  9. Key Design Decisions & Why
+  10. Deployment Strategy
+  11. What's Left to Build
+  12. Cross-Question Preparation (Q&A)
+
+================================================================================
+1. WHAT IS CATALOGX?
+================================================================================
+
+CatalogX is a Product Intelligence Platform that takes any product PDF
+(catalog, datasheet, spec sheet) from ANY industry and automatically:
+
+  - Extracts structured product data (attributes, specs, certifications)
+  - Detects the industry (electrical, software, food, pharma, agri, etc.)
+  - Validates the data against dynamically generated rules
+  - Scores confidence for each extracted attribute
+  - Classifies taxonomy (UNSPSC-style categories)
+  - Checks safety/compliance risks specific to that industry
+  - If data is missing, autonomously researches the web to fill gaps
+  - Generates a comprehensive PDF report
+  - Stores everything with tamper-proof cryptographic hashes
+
+It is FULLY INDUSTRY-AGNOSTIC. The same pipeline works for a circuit
+breaker datasheet, a SaaS license agreement, a fertilizer spec sheet,
+or a food product label.
+
+================================================================================
+2. ARCHITECTURE OVERVIEW
+================================================================================
+
+The system has three major components:
+
+  ┌──────────────────────────────────────────────────────────┐
+  │                    FRONTEND (Next.js)                     │
+  │   Upload PDF → View streaming progress → See results     │
+  │   Apple Design: springs, glassmorphism, fluid motion      │
+  └────────────────────────┬─────────────────────────────────┘
+                           │ HTTP + SSE (Server-Sent Events)
+                           ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │                    BACKEND (FastAPI)                      │
+  │   JWT Auth → Rate Limiting → CORS → Security Headers     │
+  │   Endpoints: /upload, /process (SSE), /records, /verify  │
+  │   Database: SQLAlchemy (SQLite dev / PostgreSQL prod)     │
+  └────────────────────────┬─────────────────────────────────┘
+                           │ Direct Python import
+                           ▼
+  ┌──────────────────────────────────────────────────────────┐
+  │                   AI-ML MODULE (Python)                   │
+  │   8-Stage Pipeline:                                      │
+  │   Ingest → Extract → Validate → Score → Classify →       │
+  │   Knowledge → Reasoning → Risk Radar → Report            │
+  │                                                          │
+  │   + Agentic Web Research (LangGraph, 3-tier fallback)    │
+  │   + Visual Match ("Snap and Find")                       │
+  └──────────────────────────────────────────────────────────┘
+
+  ┌──────────────────────────────────────────────────────────┐
+  │                   MCP SERVER (FastMCP)                    │
+  │   Exposes the pipeline as tools for Claude Desktop, etc.  │
+  │   Tools: analyze_product, search_products, check_risks   │
+  └──────────────────────────────────────────────────────────┘
+
+================================================================================
+3. TECH STACK (with justifications)
+================================================================================
+
+COMPONENT              TECHNOLOGY                WHY WE CHOSE IT
+─────────────────────────────────────────────────────────────────
+LLM (primary)          Qwen 3.5 4B (Ollama)      Free, local, no API costs
+LLM (fallback)         Gemini API / Groq          Only if local model fails
+Structured output      Instructor + Pydantic      Forces LLM to return valid JSON
+Token optimization     TOON                       30-60% fewer tokens per prompt
+Text embeddings        nomic-embed-text (Ollama)  Local, free, high quality
+Image embeddings       nomic-embed-vision-v1.5    Local via transformers, no API
+Vector store           ChromaDB                   Persistent, local, no server
+PDF parsing            PyMuPDF + pymupdf4llm      Fast, handles complex layouts
+OCR fallback           PyMuPDF built-in OCR       For scanned documents
+Backend framework      FastAPI                    Async, Python-native (shares AI code)
+Database ORM           SQLAlchemy 2.0 (async)     Industry standard, SQLite→Postgres
+Auth                   JWT (python-jose)          Stateless, scalable
+Password hashing       bcrypt (passlib)           Industry standard, slow-by-design
+Rate limiting          slowapi                    Open-source, IP-based
+CAPTCHA                Altcha                     Open-source, proof-of-work, self-hosted
+Tamper-proof           HMAC-SHA256                stdlib, no dependencies
+Agentic framework      LangGraph                  State machine, conditional routing
+Web search             DuckDuckGo (duckduckgo-search)  Free, no API key
+Web scraping (T1)      Playwright                 Headless browser, handles JS pages
+Web scraping (T1b)     Jina Reader (r.jina.ai)    Free, converts URL → clean markdown
+Web scraping (T2)      Firecrawl OSS              Self-hosted Docker, not the paid API
+MCP server             FastMCP (mcp SDK)          Official MCP Python SDK
+Frontend               Next.js 14                 React, App Router, SSR
+Styling                Tailwind CSS               Utility-first, rapid development
+Animation              Framer Motion              Spring physics, Apple-style motion
+
+WHY NOT [alternative]?
+  - Why not OpenAI?  → Costs money, not open-source
+  - Why not LangChain? → LangGraph is lighter, we only need the state machine
+  - Why not Node.js backend? → Our AI code is Python; FastAPI lets us import directly
+  - Why not MongoDB? → SQLAlchemy gives us relational integrity + easy Postgres swap
+  - Why not reCAPTCHA? → Google-owned, not open-source, privacy concerns
+
+================================================================================
+4. AI-ML MODULE — DETAILED BREAKDOWN
+================================================================================
+
+Directory: AI-ML/
+
+PHASE 0: INGESTION (ingestion/)
+  parse_pdf.py         → PyMuPDF extracts text, tables, images page-by-page
+  ocr_fallback.py      → Handles scanned PDFs where text extraction returns empty
+  evidence_builder.py  → Builds an "Evidence" object with full_text, pages, images
+
+PHASE 1: EXTRACTION (extraction/)
+  schema_models.py     → Pydantic models: TrustedProductRecord, ProductAttribute
+                         Every attribute has: name, value, unit, confidence,
+                         source_text (exact quote), source_page
+  extract_attributes.py → Uses Instructor to force the LLM to output a
+                          TrustedProductRecord from the evidence text
+
+PHASE 1b: VALIDATION (validation/)
+  rules.py             → Deterministic validation rules (not LLM-dependent):
+                         - Required fields check (name, manufacturer)
+                         - Numeric range validation
+                         - Unit consistency
+                         - Duplicate attribute detection
+  validate_record.py   → Runs all rules, returns pass/fail + issue list
+
+PHASE 2: CONFIDENCE SCORING (confidence/)
+  score_fields.py      → Heuristic scoring per attribute:
+                         - Source text present? (+0.2)
+                         - Numeric value parseable? (+0.1)
+                         - Attribute name in evidence? (+0.15)
+                         - Applies memory calibration offsets
+  score_record.py      → Aggregates attribute scores → record_confidence (0-1)
+
+PHASE 2b: INDUSTRY DETECTION (company_discovery/)
+  detect_industry.py   → LLM classifies industry from the evidence text
+                         Returns: industry, product_domain, product_family,
+                         document_type, confidence, reasoning
+  industry_profiles.py → Registry of industry-specific attribute expectations
+  schema_generator.py  → Generates dynamic Pydantic schemas per industry
+  validation_generator.py → Generates industry-specific validation rules
+
+PHASE 2c: TAXONOMY (taxonomy/)
+  categories.py        → UNSPSC-style category tree
+  classify_taxonomy.py → Zero-shot LLM classification → segment/family/class/code
+
+PHASE 3: KNOWLEDGE (knowledge/)
+  embed_products.py    → Embeds product records into ChromaDB using nomic-embed-text
+  similar_products.py  → Finds similar products by embedding distance
+  compatibility.py     → Checks cross-product compatibility
+  supplier_comparison.py → Compares specs across suppliers
+  revision_history.py  → Tracks changes across document versions
+
+PHASE 4: MEMORY (memory/)
+  correction_log.py    → Logs human corrections (when a user fixes an extraction)
+  confidence_calibration.py → Calculates offsets from correction history
+                              "If we consistently over-predict voltage confidence,
+                              reduce it by the average error"
+  memory_matrix.py     → Error trend analysis across runs
+
+PHASE 5: DISCOVERY (discovery/)
+  blank_space.py       → Finds gaps: "This product should have an IP rating
+                         based on its industry, but it wasn't extracted"
+  duplicate_detection.py → Finds duplicate products across the knowledge base
+  missing_variant.py   → Detects missing product variants (e.g., 24V version
+                         exists but 48V version is missing)
+
+PHASE 6: REASONING (reasoning/)
+  intent_search.py     → Structured query parsing: "Show me all products with
+                         voltage > 400V and IP rating >= IP65"
+  conflict_resolution.py → When multiple sources disagree on a spec value,
+                           compares evidence and uses LLM to pick the winner
+  evidence_comparison.py → Side-by-side comparison of evidence sources
+
+PHASE 7: EXPORT (export/)
+  export_record.py     → Formats TrustedProductRecord into clean JSON payload
+  api_ready_output.py  → Wraps with HTTP-style envelope (status, request_id)
+
+PHASE 8: BONUS STAGES
+  visual_match/
+    embed_product_images.py → Embeds catalog images using nomic-embed-vision
+    embed_text_snippets.py  → Embeds config lines, error logs for SW matching
+    match_input.py          → "Snap and Find": photo or text → nearest product
+
+  risk_radar/
+    dynamic_rules.py   → LLM generates 5-8 safety rules for ANY industry
+                         (was hardcoded for electrical/software, now dynamic)
+    detect_risk.py     → Runs rules as deterministic checks, LLM explains flags
+
+  onepager/
+    generate_onepager.py → LLM generates a 1-page product spec sheet (Markdown)
+    render_output.py     → Markdown → styled HTML → PDF (via WeasyPrint)
+
+  report/
+    generate_report.py → Compiles ALL pipeline outputs into one Markdown report:
+                         Overview, Industry, Attributes, Taxonomy, Validation,
+                         Confidence, Risk Radar, Knowledge, One-Pager
+    render_pdf.py      → Renders final report to HTML + PDF
+
+AGENTIC WEB RESEARCH (agent/)
+  tools.py             → Tool functions:
+                         - search_duckduckgo(): free web search, no API key
+                         - scrape_with_playwright(): headless Chrome, handles JS
+                         - scrape_with_jina(): r.jina.ai free API → markdown
+                         - scrape_with_firecrawl(): self-hosted OSS Docker
+                         - query_gemini_for_specs(): final fallback, LLM knowledge
+
+  judge.py             → LLM-as-Judge: scores scraped content quality (0.0-1.0)
+                         Threshold: 0.6 to pass
+                         Identifies which missing attributes were found vs still missing
+                         Has a fast heuristic pre-filter before the full LLM call
+
+  research_graph.py    → LangGraph state machine:
+                         Tier 1: DDG search → Playwright/Jina scrape → Judge
+                           ✓ Pass → Extract attributes → Done
+                           ✗ Fail ↓
+                         Tier 2: Firecrawl OSS scrape → Judge
+                           ✓ Pass → Extract attributes → Done
+                           ✗ Fail ↓
+                         Tier 3: Gemini API (knowledge-based) → Extract → Done
+
+PIPELINE ORCHESTRATOR (pipeline/)
+  run.py               → Master script that runs ALL phases in sequence
+                         Yields progress dicts: {progress: 0-100, message: "..."}
+                         Designed to be consumed by FastAPI's SSE endpoint
+
+CONFIG (config/)
+  settings.py          → Central settings: model name, DB paths, API keys
+  llm_client.py        → Unified LLM interface: get_completion(),
+                         get_structured_output(), get_embedding(),
+                         get_image_embedding()
+                         Supports: local (Ollama), groq, gemini providers
+  toon_utils.py        → TOON (Token-Optimised Object Notation) compression
+                         Reduces token usage by 30-60% before sending to LLM
+
+================================================================================
+5. BACKEND — DETAILED BREAKDOWN
+================================================================================
+
+Directory: DEV/backend/
+
+app/main.py            → FastAPI application with:
+                         - Rate limiting middleware (slowapi, 30 req/min default)
+                         - CORS middleware (configurable allowed origins)
+                         - Security headers middleware (HSTS, XSS, CSP, etc.)
+                         - Static file serving for generated reports
+                         - Async database initialization on startup
+
+app/core/config.py     → All config from environment variables:
+                         DATABASE_URL, SECRET_KEY, HMAC_KEY, CORS origins,
+                         rate limits, upload size limits, API keys
+
+app/core/security.py   → Multi-layer security:
+                         - hash_password() / verify_password() → bcrypt
+                         - create_access_token() / verify_token() → JWT
+                         - compute_content_hash() / verify_content_hash() → HMAC-SHA256
+                         - generate_altcha_challenge() / verify_altcha_solution() → CAPTCHA
+                         - generate_safe_filename() → UUID-based, prevents path traversal
+                         - validate_file_upload() → extension + size checks
+                         - SECURITY_HEADERS dict → applied to every response
+
+app/models/database.py → SQLAlchemy 2.0 async models:
+                         - User: email, username, hashed_password, is_active
+                         - Document: original/stored filename, file_hash, status
+                         - ProductRecord: full JSON data + content_hash (HMAC)
+                         - Report: HTML/PDF paths, markdown content
+                         - AuditLog: every action logged (who, what, when, IP)
+
+app/api/auth.py        → Endpoints:
+                         GET  /api/auth/captcha    → Altcha challenge
+                         POST /api/auth/register   → Create account (with CAPTCHA)
+                         POST /api/auth/login      → Get JWT token
+                         GET  /api/auth/me         → Current user info
+
+app/api/process.py     → Endpoints:
+                         POST /api/upload          → Upload PDF, save to DB, return ID
+                         GET  /api/process/{id}    → Run pipeline, stream SSE progress
+                         GET  /api/verify/{id}     → Verify record tamper-proof hash
+
+app/api/records.py     → Endpoints:
+                         GET    /api/records       → List all user's records
+                         GET    /api/records/{id}  → Get full record + report
+                         DELETE /api/records/{id}  → Delete record
+
+================================================================================
+6. SECURITY ARCHITECTURE
+================================================================================
+
+LAYER 1: AUTHENTICATION
+  - JWT Bearer tokens in Authorization header
+  - Tokens expire after 60 minutes (configurable)
+  - Passwords hashed with bcrypt (intentionally slow algorithm)
+
+LAYER 2: CAPTCHA
+  - Altcha: open-source, proof-of-work based
+  - No third-party dependency (self-hosted)
+  - Client must solve a SHA-256 puzzle (~0.5s for human, expensive for bots)
+  - Challenge signed with HMAC so server is stateless
+
+LAYER 3: RATE LIMITING
+  - slowapi: IP-based rate limiting
+  - Default: 30 requests per minute per IP
+  - Returns 429 Too Many Requests when exceeded
+
+LAYER 4: INPUT SANITIZATION
+  - File type validation (only .pdf allowed)
+  - File size limits (50MB default)
+  - UUID-based filenames (prevents path traversal attacks)
+  - No user-supplied paths ever reach the filesystem
+
+LAYER 5: TAMPER-PROOF RECORDS
+  - Every product record gets an HMAC-SHA256 content hash
+  - Hash is computed from canonical JSON (sorted keys, no whitespace)
+  - Signed with a server-side HMAC key (never exposed to client)
+  - /api/verify/{id} endpoint re-computes and compares hashes
+  - DEMO VALUE: "Try modifying this record in the database — the hash breaks"
+
+LAYER 6: SECURE HEADERS
+  - X-Content-Type-Options: nosniff
+  - X-Frame-Options: DENY (prevents clickjacking)
+  - X-XSS-Protection: 1; mode=block
+  - Strict-Transport-Security (HSTS)
+  - Content-Security-Policy
+  - Referrer-Policy: strict-origin-when-cross-origin
+  - Permissions-Policy: camera=(), microphone=(), geolocation=()
+
+LAYER 7: AUDIT LOGGING
+  - Every action logged to audit_log table
+  - Includes: user_id, action, resource_type, resource_id, IP, timestamp
+  - Actions: register, login, login_failed, upload, process_completed, etc.
+
+================================================================================
+7. MCP SERVER
+================================================================================
+
+Directory: DEV/mcp_server/server.py
+
+What is MCP?
+  Model Context Protocol — an open standard by Anthropic that lets AI
+  assistants (like Claude) call external tools. Think of it as "plugins
+  for AI". Our MCP server exposes the CatalogX pipeline as tools.
+
+Tools exposed:
+  analyze_product(pdf_path)       → Run full pipeline on a PDF
+  search_products(query)          → Semantic search in knowledge base
+  check_risks(product, industry)  → Get safety/compliance flags
+  match_product(input)            → "Snap and Find" photo/text matching
+
+Resources:
+  product://{id}                  → Read a product record by ID
+
+How to test (Claude Desktop):
+  Add to claude_desktop_config.json:
+  {
+    "mcpServers": {
+      "catalogx": {
+        "command": "python",
+        "args": ["C:/VK224/.../DEV/mcp_server/server.py"]
+      }
+    }
+  }
+  Restart Claude Desktop. Ask: "Analyze this product PDF at C:/path/to/file.pdf"
+
+================================================================================
+8. DATA FLOW (END-TO-END)
+================================================================================
+
+User uploads PDF via frontend
+  ↓
+POST /api/upload
+  → Validate file type (.pdf) and size (<50MB)
+  → Generate UUID filename (prevents path traversal)
+  → Compute SHA-256 hash of file content
+  → Save file to uploads/ directory
+  → Create Document record in database
+  → Log to audit_log
+  → Return document_id
+  ↓
+GET /api/process/{doc_id}  (SSE stream)
+  → Pipeline starts, yields progress events:
+  
+  [ 5%] Reading PDF document...
+  [15%] Detecting industry and product domain...
+  [25%] Extracting attributes for Electrical product...
+  [40%] Classifying product taxonomy...
+  [45%] Validating extracted data against rules...
+  [50%] Calculating confidence scores...
+  [55%] Agent researching 3 missing attributes online...
+       → Tier 1: DDG search → Playwright scrape → Judge (score: 0.72 PASS)
+  [70%] Agent found 2 missing attributes.
+  [75%] Running safety and compliance checks for Electrical...
+  [85%] Drafting executive one-pager...
+  [90%] Generating final PDF report...
+  [100%] Processing complete!
+  
+  → At 100%:
+    - Compute HMAC content hash of the record
+    - Save ProductRecord to database (with hash)
+    - Save Report paths to database
+    - Update Document status to "completed"
+    - Log to audit_log
+    - Return full result payload via SSE
+  ↓
+Frontend displays results:
+  - Product overview card
+  - Extracted attributes table
+  - Confidence gauge
+  - Risk radar flags
+  - One-pager preview
+  - Download PDF report button
+
+================================================================================
+9. KEY DESIGN DECISIONS & WHY
+================================================================================
+
+Q: Why a single local LLM (qwen3.5:4b) instead of cloud APIs?
+A: Zero cost. The entire pipeline runs locally. Cloud APIs (Gemini) are
+   only used as a last-resort fallback. This keeps the project 100% free.
+
+Q: Why TOON (Token-Optimised Object Notation)?
+A: When you send a product record to the LLM as a prompt, raw JSON wastes
+   tokens on quotes, brackets, and whitespace. TOON compresses this by
+   30-60%, which means fewer API errors (429), faster responses, and lower
+   cost if we ever use paid APIs.
+
+Q: Why dynamic risk rules instead of hardcoded?
+A: The platform is industry-agnostic. We can't hardcode rules for every
+   industry. Instead, we ask the LLM: "What are the top 5 safety rules
+   for [detected industry]?" This works for electrical, food, pharma,
+   agriculture, or any industry we haven't even thought of.
+
+Q: Why LangGraph instead of a simple loop?
+A: LangGraph gives us a formal state machine with conditional edges.
+   The 3-tier fallback (DDG → Firecrawl → Gemini) with judge gates at
+   each tier is naturally expressed as a graph. It's also more impressive
+   in a demo than "we wrote a for loop."
+
+Q: Why HMAC for tamper-proofing instead of blockchain?
+A: HMAC-SHA256 is cryptographically sound, zero-overhead, and doesn't
+   require a blockchain node. The key insight: the HMAC key is server-side
+   only. If someone modifies the record in the database, the hash won't
+   match when re-computed. This is verifiable in the demo.
+
+Q: Why Altcha instead of reCAPTCHA/hCaptcha?
+A: Altcha is fully open-source and self-hosted. No Google/Cloudflare
+   dependency. It uses proof-of-work (SHA-256 puzzle) instead of
+   image recognition. The client-side JS widget solves it in <1 second.
+
+Q: Why FastAPI instead of Express/Node.js?
+A: Our AI code is all Python. FastAPI lets us directly import and run
+   the pipeline modules without any REST/gRPC bridge. One language,
+   one process, zero serialization overhead.
+
+Q: Why SSE (Server-Sent Events) instead of WebSockets?
+A: SSE is simpler — it's one-way (server → client), which is exactly
+   what we need for streaming progress. WebSockets would be overkill
+   since the client never sends data during processing.
+
+================================================================================
+10. DEPLOYMENT STRATEGY
+================================================================================
+
+FOR HACKATHON DEMO (free):
+  - Backend: Run locally with uvicorn, expose via ngrok
+  - Frontend: Deploy on Vercel (free tier)
+  - LLM: Ollama running locally
+  - Database: SQLite (local file)
+
+FOR PRODUCTION:
+  - Backend: Hugging Face Spaces (ZeroGPU) or Docker on any cloud
+  - Frontend: Vercel
+  - LLM: transformers library (not Ollama) for HF Spaces compatibility
+  - Database: PostgreSQL (one env var change: DATABASE_URL)
+  - Switch: Just change DATABASE_URL from sqlite:// to postgresql://
+
+================================================================================
+11. WHAT'S LEFT TO BUILD
+================================================================================
+
+  [x] Frontend (Next.js 14 + Tailwind + Framer Motion)
+      - Full SaaS-quality dark-mode landing page
+      - Auth system (Login, Register with industry selection)
+      - Admin console with live activity feed
+      - User dashboard with search, filter, confidence bars
+      - Results report with working Export JSON & PDF
+      - Upload zone with drag-and-drop spring animations
+      - SSE streaming processing page with live logs
+      
+  [x] Docker Configuration
+      - [x] Backend Dockerfile (Python 3.11, Uvicorn)
+      - [x] Frontend Dockerfile (Multi-stage Node 20 build)
+      - [x] docker-compose.yml (full stack orchestration)
+
+  [ ] Testing & Deployment
+      - [ ] Integration tests
+      - [ ] Deploy and configure ngrok/Vercel
+      - [ ] Production environment setup
+
+  [x] ONNX Fast Path
+      - Download MAVE dataset
+      - Train DistilBERT NER model
+      - Export to ONNX INT8 for <10ms CPU inference
+
+================================================================================
+12. FRONTEND — DETAILED BREAKDOWN
+================================================================================
+
+Directory: DEV/frontend/ (Next.js 14, App Router, TypeScript)
+
+PAGES:
+  /                          Landing page: hero section with animated badge,
+                             upload zone, stats strip (8+ industries, 50+
+                             attributes, <50ms inference, 94% accuracy),
+                             "How It Works" 4-step flow, 6-feature grid,
+                             and CTA banner with "Get Started Free" button.
+
+  /login                     Email/password login form with:
+                             - Show/hide password toggle
+                             - "Admin Demo" quick button → /admin
+                             - "User Demo" quick button → /dashboard
+                             - Links to registration page
+                             - Real API integration to POST /api/auth/login
+
+  /register                  Two-step registration:
+                             Step 1: Username, email, password, confirm password
+                             Step 2: Company name (optional) + industry selector
+                               (Electrical, Software, Pharma, Food, Agriculture,
+                                Automotive, Construction, General)
+                             Animated slide transitions between steps
+
+  /dashboard                 User's history panel:
+                             - Quick stats (total analyses, avg confidence, etc.)
+                             - Search bar + filter button
+                             - Record list with confidence bars and risk badges
+                             - Each record links to /record/[id]
+
+  /admin                     Admin console:
+                             - Stats grid (total users, docs processed,
+                               avg confidence, risk flags) with trend indicators
+                             - Live activity feed (user, action, doc, industry)
+                             - Security panel (tamper checks, failed logins,
+                               rate-limited IPs, audit log size)
+                             - System operational status badge
+
+  /process/[id]              SSE streaming page:
+                             - Real-time progress bar (spring-animated)
+                             - Live log feed from EventSource
+                             - Auto-redirects to /record/[id] on completion
+
+  /record/[id]               Results dashboard:
+                             - Breadcrumb navigation
+                             - Metric cards (confidence, risk, industry, attrs)
+                             - TABBED VIEW: "Specifications" / "Safety Checks"
+                             - Clickable rows expand to show source citations
+                             - Tamper-proof hash with copy-to-clipboard
+                             - Agent activity panel (research tier, judge score)
+                             - Validation status checklist
+                             - WORKING Export JSON (downloads .json file)
+                             - WORKING Download PDF (renders styled HTML report)
+
+COMPONENTS:
+  Navbar.tsx                 Glassmorphism sticky navbar with logo, AI badge,
+                             Dashboard link, and Sign In button. Conditionally
+                             hides nav on auth pages.
+
+  UploadZone.tsx             Drag-and-drop PDF upload zone with:
+                             - Spring physics scale animation on drag
+                             - Blue glow border on hover
+                             - File validation (PDF only, 50MB max)
+                             - Loading spinner during upload
+                             - Real API integration to POST /api/upload
+
+DESIGN SYSTEM:
+  globals.css                Dark-mode design tokens:
+                             - Animated floating gradient orbs (blue + violet)
+                             - Glassmorphism utilities (40px blur, saturation)
+                             - Gradient text utilities (hero + accent)
+                             - Animated conic gradient border
+                             - Dot pattern background
+                             - Button variants (btn-primary, btn-ghost)
+                             - Stat glow effect
+
+================================================================================
+13. DOCKER CONFIGURATION
+================================================================================
+
+docker-compose.yml (root):
+  - backend: Python 3.11, Uvicorn, port 8000, mounts uploads/reports/db
+  - frontend: Node 20 Alpine multi-stage, port 3000, standalone output
+  - Network: catalogx-net (bridge)
+
+DEV/backend/Dockerfile:
+  - Copies requirements.txt, AI-ML/, and DEV/backend/
+  - PYTHONPATH set for both backend and root imports
+  - Runs uvicorn app.main:app
+
+DEV/frontend/Dockerfile:
+  - Multi-stage build (builder → runner)
+  - npm ci → npm run build → standalone server
+  - Production-optimized with Next.js standalone output
+
+================================================================================
+14. ENVIRONMENT VARIABLES
+================================================================================
+
+Backend (.env in DEV/backend/):
+  DATABASE_URL           SQLite for dev, PostgreSQL for prod
+  SECRET_KEY             JWT signing key
+  HMAC_KEY               Tamper-proof record signing key
+  ALLOWED_ORIGINS        CORS origins (http://localhost:3000)
+
+Frontend (.env in DEV/frontend/):
+  NEXT_PUBLIC_API_URL    Backend URL (http://localhost:8000)
+
+================================================================================
+15. CROSS-QUESTION PREPARATION
+================================================================================
+
+Q: "How do you handle hallucinations from the LLM?"
+A: Three layers:
+   1. Instructor forces structured output (Pydantic validation)
+   2. Every attribute must cite source_text (exact quote from the PDF)
+   3. Confidence scoring penalizes attributes without source evidence
+   4. The Memory module tracks systematic errors and calibrates over time
+
+Q: "What happens if the LLM is offline?"
+A: The pipeline catches exceptions at every stage. If local model fails,
+   it falls back to Groq or Gemini API. If all fail, it returns partial
+   results with clear error messages.
+
+Q: "How scalable is this?"
+A: The architecture is stateless by design. FastAPI is async. Database
+   is PostgreSQL-ready. The only stateful component is ChromaDB (local
+   vector store), which can be swapped to a hosted solution. The ONNX
+   fast-path models (future) would eliminate the LLM bottleneck entirely.
+
+Q: "Is the tamper-proof hash really secure?"
+A: Yes. HMAC-SHA256 with a server-side key. The attacker would need the
+   HMAC key to forge a valid hash. The key is never exposed in the API
+   response — only the hash is returned. You can demonstrate this live:
+   modify a record in the DB, call /api/verify/{id}, and it says TAMPERED.
+
+Q: "Why not fine-tune a custom model?"
+A: We don't have labeled training data specific to our use case. Instead,
+   we use "LLM-as-Teacher" — the LLM generates labels during extraction,
+   which we can later use to train small DistilBERT models (ONNX) for
+   near-instant inference. This is a planned Phase 2 optimization.
+
+Q: "How does the industry detection work without training data?"
+A: Zero-shot classification. We prompt the LLM: "Given this product
+   description, what industry does it belong to?" The LLM uses its
+   pre-training knowledge to classify. We then use the detected industry
+   to dynamically generate validation rules and risk checks.
+
+Q: "What makes this different from just using ChatGPT?"
+A: Five things:
+   1. Structured output (Pydantic-enforced, not free-text)
+   2. Provenance tracking (every fact links to a source quote + page)
+   3. Tamper-proof records (HMAC cryptographic hashes)
+   4. Self-improving memory (tracks errors, calibrates over time)
+   5. Agentic research (autonomously searches the web for missing data)
+
+Q: "How do you handle different PDF formats?"
+A: PyMuPDF handles most layouts. For scanned PDFs, OCR fallback kicks in
+   automatically. The evidence_builder creates a normalized Evidence
+   object regardless of the source format.
+
+Q: "What's the MCP server for?"
+A: It lets any AI assistant (Claude, Cursor, etc.) use our platform as a
+   tool. Imagine asking Claude: "Analyze this product PDF and check if it
+   has any safety risks." Claude calls our MCP tools and returns the
+   results. It's a force multiplier — our AI becomes a tool for other AIs.
+
+Q: "Why does your frontend have demo/mock data?"
+A: The mock data is a demo fallback so judges can immediately see what the
+   full pipeline output looks like without needing Ollama running locally.
+   In production, the record page fetches real data from the API. The mock
+   data matches the exact schema the backend returns.
+
+================================================================================
+END OF REFERENCE GUIDE
+================================================================================

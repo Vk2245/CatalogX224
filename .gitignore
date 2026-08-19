@@ -1,0 +1,49 @@
+# Root ignores
+DEV/skills/
+
+# Node / Next.js
+node_modules/
+DEV/frontend/node_modules/
+DEV/backend/node_modules/
+DEV/frontend/.next/
+DEV/frontend/out/
+DEV/frontend/dist/
+DEV/backend/dist/
+
+# Env files
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build artifacts
+coverage/
+*.tsbuildinfo
+.DS_Store
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Generated files
+DEV/backend/reports/
+DEV/backend/uploads/
+
+# ML model artifacts (regenerate with train_classifier.py + export_onnx.py)
+AI-ML/training/models/
+*.safetensors
+*.onnx
+*.pt
+*.pth
+*.bin

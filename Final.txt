@@ -1,0 +1,403 @@
+# FINAL ROADMAP
+# AI-Powered Product Intelligence Platform
+## UniHack Final Blueprint (2-Member Team)
+
+============================================================
+VISION
+============================================================
+
+Build an adaptive AI-powered Product Intelligence Platform that transforms scattered product information into trusted, explainable, commerce-ready intelligence.
+
+The platform automatically adapts itself to different companies and industries using AI-driven company discovery, industry profiles, dynamic schemas, dynamic validation rules and dynamic UI rendering.
+
+The first implementation focuses on ONE industrial vertical for the hackathon, while the architecture is extensible to multiple industries.
+
+============================================================
+ROADMAP
+============================================================
+
+Stage 0 — Intelligent Data Acquisition
+--------------------------------------
+Purpose
+- Collect product information from PDFs, websites, catalogs and structured files.
+
+Features
+- PDF ingestion
+- OCR
+- Layout understanding
+- Table extraction
+- Image extraction
+- Metadata extraction
+- Multi-source ingestion
+
+Output
+- Unified Product Evidence
+
+============================================================
+
+Stage 1 — Product Intelligence Engine
+--------------------------------------
+
+Purpose
+Convert raw evidence into structured product intelligence.
+
+Features
+
+- Attribute extraction
+- Entity extraction
+- Product schema generation
+- Taxonomy mapping
+- Unit normalization
+- Rule validation
+- Confidence scoring
+- Explainable AI
+- Bounding-box provenance
+- Human Review
+
+Output
+
+Trusted Product Record
+
+============================================================
+
+Stage 2 — Adaptive Platform Layer
+--------------------------------------
+
+Purpose
+
+The platform automatically understands the customer and configures itself.
+
+2.1 Automatic Company Discovery
+
+Input
+
+- Company website
+- PDFs
+- Catalog
+- Product list
+
+Predict
+
+- Industry
+- Product domain
+- Product family
+- Document type
+- Required attributes
+
+2.2 Industry Profile Engine
+
+Each industry contains
+
+- Product schema
+- Mandatory fields
+- Validation rules
+- Business rules
+- UI configuration
+- Review workflow
+
+Examples
+
+Electrical
+Networking
+Mechanical
+Medical
+Chemical
+
+2.3 Dynamic Schema Engine
+
+Generate schemas automatically based on
+
+- Industry
+- Product family
+- Customer configuration
+
+2.4 Dynamic Validation Engine
+
+Rules automatically change according to
+
+- Industry
+- Company
+- Product
+
+2.5 Dynamic UI Renderer
+
+Frontend renders UI dynamically from configuration.
+
+Different customers automatically receive
+
+- Different forms
+- Different sections
+- Different validations
+- Different workflows
+
+without changing frontend code.
+
+Output
+
+Adaptive Platform
+
+============================================================
+
+Stage 3 — Product Knowledge Layer
+--------------------------------------
+
+Purpose
+
+Connect products with products.
+
+Features
+
+- Compatibility suggestions
+- Similar products
+- Alternative products
+- Supplier comparison
+- Cross-document reconciliation
+- Revision history
+- Product relationships
+
+Output
+
+Connected Product Knowledge
+
+============================================================
+
+Stage 4 — Product Memory Layer
+--------------------------------------
+
+Purpose
+
+Every interaction permanently improves the platform.
+
+Features
+
+- Human corrections
+- Reviewer feedback
+- Recall history
+- Revision history
+- Confidence evolution
+- Industrial Memory Matrix
+- Continuous learning
+
+Output
+
+Living Product Memory
+
+============================================================
+
+Stage 5 — Discovery & Opportunity Intelligence
+--------------------------------------
+
+Purpose
+
+Move beyond catalog management.
+
+Features
+
+- Blank Space Discovery
+- Missing product variants
+- Portfolio opportunities
+- Duplicate products
+- Supplier gaps
+- Missing attributes
+- Obsolete products
+- Cross-catalog inconsistencies
+
+Output
+
+Business Intelligence
+
+============================================================
+
+Stage 6 — Engineering Reasoning Layer
+--------------------------------------
+
+Purpose
+
+Reason instead of simply extracting.
+
+Features
+
+- Intent-Based Industrial Search
+- Conflict resolution across sources
+- Evidence comparison
+- Explainable recommendations
+- Reasoning over multiple documents
+- Best-supported value selection
+
+Example
+
+"I need a corrosion resistant connector for outdoor use."
+
+instead of
+
+"M8 connector"
+
+Output
+
+Engineering Decision Support
+
+============================================================
+
+Stage 7 — Commerce Intelligence
+--------------------------------------
+
+Purpose
+
+Generate commerce-ready product intelligence.
+
+Features
+
+- ERP Integration
+- PIM Integration
+- Procurement support
+- Marketplace onboarding
+- Export APIs
+- Product APIs
+- Search APIs
+
+Output
+
+Trusted Commerce Intelligence
+
+============================================================
+DEMO FLOW
+============================================================
+
+1. Upload product PDF
+2. AI extracts structured attributes
+3. Validation & confidence scoring
+4. Click field → source highlighted
+5. Human review
+6. Automatic company discovery
+7. Adaptive UI generated
+8. Compatibility suggestions
+9. Blank Space Discovery
+10. Opportunity Intelligence
+11. Intent-based search
+12. Export to ERP/PIM
+
+============================================================
+TEAM SPLIT
+============================================================
+
+AI / ML  (ai_ml/)
+
+- OCR
+- Document Parsing
+- Layout Analysis
+- Attribute Extraction
+- Entity Recognition
+- Taxonomy Mapping
+- Validation Engine
+- Confidence Scoring
+- Explainability
+- Company Discovery
+- Industry Classification
+- Industry Profile Generation
+- Dynamic Schema Generation
+- Dynamic Validation Rules
+- Compatibility Engine
+- Similarity Engine
+- Product Relationships
+- Blank Space Discovery
+- Opportunity Intelligence
+- Industrial Memory Matrix
+- Continuous Learning
+
+------------------------------------------------------------
+
+Full Stack / Backend / Deployment (platform/)
+
+Frontend
+
+- Authentication
+- Dashboard
+- Upload UI
+- Dynamic UI Renderer
+- Product Viewer
+- Evidence Viewer
+- Review Queue
+- Search Interface
+- Admin Panel
+
+Backend
+
+- REST APIs
+- AI Integration APIs
+- Authentication
+- Database
+- Job Queue
+- Tenant Management
+- Company Profiles
+- Industry Profiles
+- Workflow Engine
+- ERP/PIM Connectors
+
+Deployment
+
+- Docker
+- CI/CD
+- Cloud Deployment
+- Monitoring
+- Logging
+
+============================================================
+SHARED FOLDER
+============================================================
+
+shared/
+
+Contains
+
+- JSON Schemas
+- API Contracts
+- Industry Profiles
+- Validation Configurations
+- Prompt Templates
+- Constants
+
+Both developers primarily work in their own folders.
+The shared folder acts as the contract between AI and platform.
+Schema changes should be coordinated before merging.
+
+============================================================
+GIT WORKFLOW
+============================================================
+
+main
+
+├── ai-ml-dev
+├── fullstack-dev
+├── feature/*
+
+Rules
+
+- AI engineer modifies only ai_ml/
+- Full-stack engineer modifies only platform/
+- Shared changes require agreement
+- Merge into main only after integration testing
+
+============================================================
+KEY DIFFERENTIATORS
+============================================================
+
+- Explainable AI
+- Bounding-box provenance
+- Adaptive Company Discovery
+- Industry Profile Engine
+- Dynamic Schema Generation
+- Dynamic Validation Engine
+- Dynamic UI Renderer
+- Product Memory
+- Industrial Memory Matrix
+- Compatibility Intelligence
+- Blank Space Discovery
+- Opportunity Intelligence
+- Intent-Based Industrial Search
+- Commerce-ready Product Intelligence
+
+============================================================
+ONE-LINE PITCH
+============================================================
+
+An adaptive AI-powered Product Intelligence Platform that understands a company's domain, configures itself automatically, transforms scattered product information into trusted commerce-ready intelligence, continuously learns from human expertise, and scales across industries through configurable AI profiles.
