@@ -35,10 +35,12 @@ class IndustryDetection(BaseModel):
         description="Type of document: 'datasheet', 'spec_sheet', 'catalog', 'manual', 'other'"
     )
     confidence: float = Field(
+        default=0.85,
         ge=0.0, le=1.0,
         description="Confidence in the industry detection",
     )
     reasoning: str = Field(
+        default="Not provided by model",
         description="Brief explanation of how the industry was determined"
     )
 
