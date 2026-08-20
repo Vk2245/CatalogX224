@@ -32,7 +32,9 @@ Rules:
 - If you are uncertain about a value, still extract it but note lower confidence
 - Do not invent or hallucinate values. If something is not in the document, skip it
 - Extract the product name, manufacturer, and part number if present
-- Write a brief description summarizing what the product is"""
+- Write a brief description summarizing what the product is
+
+IMPORTANT: You must follow the requested JSON schema EXACTLY. Ensure you include ALL required fields, including any `confidence`, `reasoning`, and nested fields. Do not skip top-level fields."""
 
 
 def extract_from_evidence(

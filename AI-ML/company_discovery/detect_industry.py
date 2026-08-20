@@ -65,7 +65,9 @@ Common industries include but are not limited to:
 - energy (renewable, oil/gas, power generation)
 
 If the document does not clearly belong to any industry, use 'general'.
-The industry key must be a single lowercase word or short phrase."""
+The industry key must be a single lowercase word or short phrase.
+
+IMPORTANT: You MUST include the fields `confidence` (a float between 0.0 and 1.0) and `reasoning` (a brief explanation of your choice)."""
 
 
 def detect_industry(
