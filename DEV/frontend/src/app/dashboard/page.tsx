@@ -155,7 +155,7 @@ export default function DashboardPage() {
                       {rec.product_name || "Unknown Product"}
                     </h3>
                     <p className="text-xs text-[var(--muted)] mt-0.5">
-                      {rec.manufacturer || "Unknown Mfr"} • {rec.industry || "Unknown Industry"} • {rec.uploaded_at ? new Date(rec.uploaded_at).toLocaleDateString() : ""}
+                      {rec.manufacturer || "Unknown Mfr"} - {rec.industry || "Unknown Industry"} - {rec.uploaded_at ? new Date(rec.uploaded_at).toLocaleDateString() : ""}
                     </p>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export default function DashboardPage() {
               </div>
             </Link>
           </motion.div>
-        ))}
+        )))}
       </div>
     </div>
   );
