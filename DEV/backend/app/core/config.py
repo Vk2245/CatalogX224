@@ -41,7 +41,7 @@ DATABASE_URL: str = os.getenv(
 
 SECRET_KEY: str = os.getenv("SECRET_KEY", "catalogx-dev-secret-change-in-production")
 ALGORITHM: str = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
+ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 HMAC_KEY: str = os.getenv("HMAC_KEY", "catalogx-hmac-key-change-in-production")
 
 # CAPTCHA (Altcha — open-source, self-hosted, proof-of-work)
