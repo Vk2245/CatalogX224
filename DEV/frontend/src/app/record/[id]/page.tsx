@@ -192,7 +192,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
   const confPct = (record.record_confidence * 100).toFixed(0);
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 py-10 space-y-8 relative z-10">
+    <div className="max-w-5xl mx-auto px-6 py-8 space-y-6 relative z-10">
       {/* Back + Breadcrumb */}
       <div className="flex items-center gap-3 text-sm text-[var(--secondary)]">
         <Link
@@ -208,9 +208,9 @@ export default function RecordPage({ params }: { params: { id: string } }) {
       </div>
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--border)] pb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--border)] pb-6">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tighter text-[var(--foreground)] mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tighter text-[var(--foreground)] mb-2">
             {record.product_name}
           </h1>
           <p className="text-base text-[var(--secondary)]">

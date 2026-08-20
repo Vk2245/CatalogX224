@@ -212,10 +212,10 @@ export default function ChatPage() {
 
   
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] max-w-7xl mx-auto relative z-10 pt-4 pb-6 px-4 md:px-6 gap-6">
+    <div className="flex h-[calc(100vh-3.5rem)] max-w-5xl mx-auto relative z-10 pt-4 pb-6 px-4 md:px-6 gap-4">
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0 flex-col gap-4 hidden md:flex border border-[var(--border)] rounded-2xl glass-panel p-4 overflow-hidden">
-        <h2 className="text-xs font-semibold text-[var(--secondary)] uppercase tracking-widest px-1 mb-2">Past Conversations</h2>
+      <div className="w-56 flex-shrink-0 flex-col gap-4 hidden md:flex border border-[var(--border)] rounded-2xl glass-panel p-4 overflow-hidden">
+        <h2 className="text-[10px] font-semibold text-[var(--secondary)] uppercase tracking-widest px-1 mb-2">Past Conversations</h2>
         <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
           {historyList.length === 0 ? (
             <p className="text-xs text-[var(--muted)] px-1">No past conversations.</p>
@@ -287,10 +287,10 @@ export default function ChatPage() {
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/10 to-violet-500/10 border border-black/5 dark:border-white/5 flex items-center justify-center mb-6">
               <Bot size={28} className="text-blue-400" />
             </div>
-            <h2 className="text-xl font-semibold text-[var(--foreground)] mb-2">
+            <h2 className="text-lg font-semibold text-[var(--foreground)] mb-2">
               How can I help?
             </h2>
-            <p className="text-[var(--secondary)] max-w-sm text-sm mb-8">
+            <p className="text-[var(--secondary)] max-w-xs text-xs mb-6">
               Ask me anything about your product scans — confidence scores,
               risk levels, comparisons, and more.
             </p>

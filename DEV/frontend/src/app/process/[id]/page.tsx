@@ -78,19 +78,19 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
   }, [params.id, router]);
 
   return (
-    <div className="w-full max-w-3xl mx-auto mt-12 flex flex-col items-center relative z-10">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-extrabold tracking-tight text-[var(--foreground)] mb-4">
+    <div className="w-full max-w-xl mx-auto mt-8 flex flex-col items-center relative z-10">
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-2">
           Analyzing Product Data
         </h1>
-        <p className="text-[var(--secondary)] text-lg">
+        <p className="text-[var(--secondary)] text-sm">
           Our AI pipeline is extracting, validating, and scoring the document.
         </p>
       </div>
 
-      <div className="w-full glass-panel rounded-[2.5rem] p-10 mb-10 shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-[var(--border)]">
+      <div className="w-full glass-panel rounded-3xl p-6 mb-6 border border-[var(--border)]">
         {/* Progress Bar Container */}
-        <div className="mb-10">
+        <div className="mb-6">
           <div className="flex justify-between items-end mb-4">
             <span className="text-sm font-semibold text-[var(--secondary)] uppercase tracking-widest">
               {status === "completed" ? "Finished" : "Processing"}

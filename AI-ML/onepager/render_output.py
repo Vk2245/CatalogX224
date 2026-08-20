@@ -92,6 +92,20 @@ def render_to_pdf(
     if weasyprint is not available.
     """
     try:
+        import os
+        import sys
+        if sys.platform == "win32":
+            # Add GTK bin directories to path for WeasyPrint
+            gtk_bin = r"C:\msys64\mingw64\bin"
+            if os.path.exists(gtk_bin):
+                if gtk_bin not in os.environ["PATH"]:
+                    os.environ["PATH"] = gtk_bin + os.path.pathsep + os.environ["PATH"]
+                if hasattr(os, "add_dll_directory"):
+                    try:
+                        os.add_dll_directory(gtk_bin)
+                    except Exception as ex:
+                        print(f"[WeasyPrint Setup] Failed to add dll directory {gtk_bin}: {ex}")
+
         from weasyprint import HTML
         HTML(string=html_content).write_pdf(output_path)
         return output_path

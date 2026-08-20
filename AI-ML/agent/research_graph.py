@@ -97,7 +97,7 @@ Target attributes: {attrs_str}
 
 Content:
 ---
-{content[:5000]}
+{content[:3000]}
 ---
 
 Extract ONLY the attributes listed above. For each, provide:

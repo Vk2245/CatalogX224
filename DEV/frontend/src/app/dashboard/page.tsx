@@ -62,14 +62,14 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-8 relative z-10">
+    <div className="max-w-5xl mx-auto px-6 py-8 space-y-6 relative z-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">
+          <h1 className="text-2xl font-bold text-[var(--foreground)] tracking-tight">
             Dashboard
           </h1>
-          <p className="text-[var(--secondary)] mt-1">
+          <p className="text-xs text-[var(--secondary)] mt-1">
             Your analyzed product catalog history.
           </p>
         </div>
