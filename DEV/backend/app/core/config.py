@@ -9,14 +9,16 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
-
 # ---------------------------------------------------------------------------
-# Paths
+# Paths & Environment
 # ---------------------------------------------------------------------------
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent  # DEV/backend/
 PROJECT_ROOT = BASE_DIR.parent.parent  # UNI-HACK/
+
+# Load unified .env from the project root
+load_dotenv(PROJECT_ROOT / ".env")
+
 AI_ML_DIR = PROJECT_ROOT / "AI-ML"
 UPLOAD_DIR = BASE_DIR / "uploads"
 REPORTS_DIR = BASE_DIR / "reports"

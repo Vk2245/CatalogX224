@@ -192,25 +192,25 @@ export default function RecordPage({ params }: { params: { id: string } }) {
   const confPct = (record.record_confidence * 100).toFixed(0);
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10 space-y-8 relative z-10">
+    <div className="max-w-[1600px] mx-auto px-6 py-10 space-y-8 relative z-10">
       {/* Back + Breadcrumb */}
       <div className="flex items-center gap-3 text-sm text-[var(--secondary)]">
         <Link
           href="/dashboard"
-          className="flex items-center gap-1 hover:text-white transition-colors"
+          className="flex items-center gap-1 hover:text-[var(--foreground)] transition-colors"
         >
           <ArrowLeft size={14} /> Dashboard
         </Link>
         <ChevronRight size={12} />
         <span className="text-[var(--accent-blue)]">{record.industry}</span>
         <ChevronRight size={12} />
-        <span className="text-white">{record.product_name}</span>
+        <span className="text-[var(--foreground)]">{record.product_name}</span>
       </div>
 
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-[var(--border)] pb-8">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tighter text-white mb-2">
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tighter text-[var(--foreground)] mb-2">
             {record.product_name}
           </h1>
           <p className="text-base text-[var(--secondary)]">
@@ -244,7 +244,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
           <p className="text-xs text-[var(--secondary)] uppercase tracking-wider mb-1">
             AI Confidence
           </p>
-          <p className="text-3xl font-extrabold text-white stat-glow">
+          <p className="text-3xl font-extrabold text-[var(--foreground)] stat-glow">
             {confPct}%
           </p>
           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden mt-3">
@@ -280,7 +280,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
           <p className="text-xs text-[var(--secondary)] uppercase tracking-wider mb-1">
             Industry
           </p>
-          <p className="text-lg font-bold text-white flex items-center gap-2">
+          <p className="text-lg font-bold text-[var(--foreground)] flex items-center gap-2">
             <Globe2 size={16} className="text-[var(--accent-blue)]" />
             {record.industry.split(" ")[0]}
           </p>
@@ -293,7 +293,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
           <p className="text-xs text-[var(--secondary)] uppercase tracking-wider mb-1">
             Attributes
           </p>
-          <p className="text-3xl font-extrabold text-white">
+          <p className="text-3xl font-extrabold text-[var(--foreground)]">
             {record.record_data.attributes.length}
           </p>
           <p className="text-xs text-[var(--muted)] mt-2">
@@ -317,7 +317,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
               onClick={() => setActiveTab("attributes")}
               className={`flex-1 text-sm font-medium py-2 rounded-lg transition-all ${
                 activeTab === "attributes"
-                  ? "bg-white/10 text-white"
+                  ? "bg-black/10 dark:bg-white/10 text-[var(--foreground)]"
                   : "text-[var(--muted)] hover:text-[var(--secondary)]"
               }`}
             >
@@ -328,7 +328,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
               onClick={() => setActiveTab("risks")}
               className={`flex-1 text-sm font-medium py-2 rounded-lg transition-all ${
                 activeTab === "risks"
-                  ? "bg-white/10 text-white"
+                  ? "bg-black/10 dark:bg-white/10 text-[var(--foreground)]"
                   : "text-[var(--muted)] hover:text-[var(--secondary)]"
               }`}
             >
@@ -374,7 +374,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
                           <td className="py-3.5 text-sm font-medium text-gray-200">
                             {attr.name}
                           </td>
-                          <td className="py-3.5 text-sm font-mono text-white">
+                          <td className="py-3.5 text-sm font-mono text-[var(--foreground)]">
                             {attr.value}{" "}
                             {attr.unit && (
                               <span className="text-[var(--accent-blue)]">
@@ -486,7 +486,7 @@ export default function RecordPage({ params }: { params: { id: string } }) {
               </code>
               <button
                 onClick={copyHash}
-                className="absolute top-2 right-2 text-[var(--muted)] hover:text-white transition-colors opacity-0 group-hover:opacity-100"
+                className="absolute top-2 right-2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors opacity-0 group-hover:opacity-100"
               >
                 {copiedHash ? (
                   <Check size={14} className="text-emerald-400" />

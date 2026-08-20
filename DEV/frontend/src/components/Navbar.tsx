@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Box, LogIn, LogOut, LayoutDashboard, User } from "lucide-react";
+import { Box, LogIn, LogOut, LayoutDashboard, User, MessageSquare } from "lucide-react";
+import { ThemeToggle } from "./ThemeToggle";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -38,13 +39,13 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full glass-panel border-b border-[var(--border)]">
-      <div className="mx-auto max-w-7xl px-6 h-14 flex items-center justify-between">
+      <div className="mx-auto max-w-[1600px] px-6 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 text-white font-semibold text-base tracking-tight hover:opacity-80 transition-opacity"
+          className="flex items-center gap-2.5 text-[var(--foreground)] font-semibold text-base tracking-tight hover:opacity-80 transition-opacity"
         >
-          <div className="bg-white text-black p-1.5 rounded-lg shadow-[0_0_12px_rgba(255,255,255,0.15)]">
+          <div className="bg-[var(--foreground)] text-[var(--background)] p-1.5 rounded-lg shadow-[0_0_12px_rgba(255,255,255,0.15)] dark:shadow-[0_0_12px_rgba(255,255,255,0.15)] shadow-black/10">
             <Box size={16} strokeWidth={2.5} />
           </div>
           <span>CatalogX</span>
@@ -54,15 +55,27 @@ export default function Navbar() {
         </Link>
 
         {/* Right Nav */}
-        {!isAuthPage && (
-          <nav className="flex items-center gap-2">
-            <Link
-              href="/dashboard"
-              className="flex items-center gap-1.5 text-[var(--secondary)] text-sm font-medium px-3.5 py-2 rounded-lg hover:text-white hover:bg-white/5 transition-all"
-            >
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          {!isAuthPage && (
+            <nav className="flex items-center gap-2">
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 text-[var(--secondary)] text-sm font-medium px-3.5 py-2 rounded-lg hover:text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+              >
               <LayoutDashboard size={15} />
               Dashboard
             </Link>
+
+            {isLoggedIn && (
+              <Link
+                href="/chat"
+                className="flex items-center gap-1.5 text-[var(--secondary)] text-sm font-medium px-3.5 py-2 rounded-lg hover:text-[var(--foreground)] hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+              >
+                <MessageSquare size={15} />
+                Chat
+              </Link>
+            )}
 
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
@@ -88,7 +101,8 @@ export default function Navbar() {
               </Link>
             )}
           </nav>
-        )}
+          )}
+        </div>
       </div>
     </header>
   );

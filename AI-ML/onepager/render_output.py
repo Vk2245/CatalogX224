@@ -95,11 +95,11 @@ def render_to_pdf(
         from weasyprint import HTML
         HTML(string=html_content).write_pdf(output_path)
         return output_path
-    except ImportError:
-        # Fallback: save as HTML if weasyprint not installed
+    except Exception as e:
+        # Fallback: save as HTML if weasyprint or its GTK dependencies fail to load
         html_path = output_path.replace(".pdf", ".html")
         save_html(html_content, html_path)
-        print(f"weasyprint not installed, saved as HTML instead: {html_path}")
+        print(f"PDF generation failed ({e}), saved as HTML instead: {html_path}")
         return html_path
 
 

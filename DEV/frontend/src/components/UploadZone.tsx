@@ -87,7 +87,7 @@ export default function UploadZone() {
         className={`relative overflow-hidden glass-panel-strong rounded-3xl transition-all duration-500 ${
           isDragging
             ? "border-blue-500/40 shadow-[0_0_60px_rgba(59,130,246,0.12)]"
-            : "hover:border-white/10"
+            : "hover:border-black/10 dark:hover:border-white/10"
         }`}
         animate={{ scale: isDragging ? 0.98 : 1 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -118,12 +118,12 @@ export default function UploadZone() {
                   className={`p-4 rounded-2xl mb-5 transition-colors duration-300 ${
                     isDragging
                       ? "bg-blue-500/10 text-blue-400"
-                      : "bg-white/5 text-white/60"
+                      : "bg-black/5 dark:bg-white/5 text-[var(--muted)]"
                   }`}
                 >
                   <UploadCloud size={36} strokeWidth={1.2} />
                 </div>
-                <h3 className="text-lg font-semibold text-white mb-2">
+                <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
                   Drop your catalog PDF
                 </h3>
                 <p className="text-[var(--secondary)] text-sm mb-7 max-w-xs leading-relaxed">
@@ -143,10 +143,10 @@ export default function UploadZone() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center w-full"
               >
-                <div className="bg-white/5 p-4 rounded-2xl mb-4 relative border border-white/5">
+                <div className="bg-black/5 dark:bg-white/5 p-4 rounded-2xl mb-4 relative border border-black/5 dark:border-white/5">
                   <FileText
                     size={36}
-                    className="text-white/80"
+                    className="text-[var(--foreground)] opacity-80"
                     strokeWidth={1.2}
                   />
                   <div className="absolute -bottom-1.5 -right-1.5 bg-emerald-500 text-black p-1 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.3)]">
@@ -154,7 +154,7 @@ export default function UploadZone() {
                   </div>
                 </div>
 
-                <h3 className="text-base font-semibold text-white truncate max-w-[260px] mb-1">
+                <h3 className="text-base font-semibold text-[var(--foreground)] truncate max-w-[260px] mb-1">
                   {file.name}
                 </h3>
                 <p className="text-[var(--secondary)] text-xs mb-7">

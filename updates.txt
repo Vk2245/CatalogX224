@@ -1,8 +1,10 @@
 ================================================================================
   CatalogX — Product Intelligence Platform
   Complete Project Reference Guide
-  Last Updated: 2026-08-16 18:55 IST
+  Last Updated: 2026-08-20 01:00 IST
 ================================================================================
+
+UPDATE (2026-08-20): Migrated default local LLM inference engine from Ollama to vLLM (OpenAI compatible) for massive speed improvements using PagedAttention. Model selection updated to Qwen/Qwen2.5-3B-Instruct-AWQ for 6GB VRAM support on WSL2.
 
 TABLE OF CONTENTS
   1. What is CatalogX?
@@ -697,3 +699,14 @@ A: The mock data is a demo fallback so judges can immediately see what the
 ================================================================================
 END OF REFERENCE GUIDE
 ================================================================================
+
+
+=========================================
+Date: 2026-08-20
+Updates:
+- Fixed Next.js backend connection issues: Moved backend Uvicorn to Port 8080 due to vLLM port conflict on 8000.
+- Resolved WeasyPrint PDF generation crash on Windows by implementing graceful HTML fallback in ender_output.py.
+- Optimized VRAM usage (6GB limit): Changed VLLM model from text-only Qwen2.5-3B to the multimodal Qwen2-VL-2B-Instruct-AWQ.
+- Enabled OCR vision capabilities directly via vLLM on a single inference server, leaving ~3.5GB VRAM free for large PDF context and avoiding OOM errors.
+- Consolidated all provider configurations in settings.py to route both text and vision traffic to vLLM (VISION_PROVIDER='vllm').
+=========================================

@@ -19,6 +19,7 @@ from config.settings import (
     PROVIDER_MODELS,
     DEFAULT_PROVIDER,
     OLLAMA_BASE_URL,
+    VLLM_BASE_URL,
     GROQ_API_KEY,
     GEMINI_API_KEY,
 )
@@ -46,6 +47,9 @@ def _build_kwargs(provider: str) -> dict[str, Any]:
     if provider == "local":
         kwargs["api_base"] = OLLAMA_BASE_URL
         kwargs["num_ctx"] = 8192  # Increase context window for Ollama
+    elif provider == "vllm":
+        kwargs["api_base"] = VLLM_BASE_URL
+        kwargs["api_key"] = "dummy-key"  # vLLM/OpenAI format requires a dummy key
     elif provider == "groq":
         kwargs["api_key"] = GROQ_API_KEY
     elif provider == "gemini":
@@ -103,7 +107,7 @@ def get_structured_output(
     Uses instructor to auto-retry until the output matches the schema.
     This is the primary function for all structured extraction tasks.
     """
-    if provider == "local":
+    if provider in ("local", "vllm"):
         json_instruction = (
             "You MUST return your response as a valid JSON object. "
             "Do NOT wrap it in markdown blocks. Do NOT include any explanations before or after the JSON."
@@ -122,9 +126,8 @@ def get_structured_output(
     kwargs = _build_kwargs(provider)
 
     # Create an instructor-patched client via litellm
-    # Ollama models often fail with TOOLS mode, so use MD_JSON mode for local provider
-    # MD_JSON tells instructor to parse JSON out of a markdown block, which small models prefer.
-    if provider == "local":
+    # Ollama and small vLLM models often fail with TOOLS mode, so use MD_JSON mode
+    if provider in ("local", "vllm"):
         client = instructor.from_litellm(litellm.completion, mode=instructor.Mode.MD_JSON)
     else:
         client = instructor.from_litellm(litellm.completion)

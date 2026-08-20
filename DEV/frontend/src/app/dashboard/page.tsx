@@ -58,11 +58,11 @@ const mockRecords = [
 
 export default function DashboardPage() {
   return (
-    <div className="max-w-6xl mx-auto px-6 py-12 space-y-8 relative z-10">
+    <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-8 relative z-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
+          <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight">
             Dashboard
           </h1>
           <p className="text-[var(--secondary)] mt-1">
@@ -86,11 +86,11 @@ export default function DashboardPage() {
           { label: "Fast Path Hits", value: "2", icon: Zap },
         ].map((s, i) => (
           <div key={s.label} className="glass-panel rounded-xl p-4 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center text-[var(--accent-blue)]">
+            <div className="w-9 h-9 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--accent-blue)]">
               <s.icon size={16} />
             </div>
             <div>
-              <p className="text-lg font-bold text-white">{s.value}</p>
+              <p className="text-lg font-bold text-[var(--foreground)]">{s.value}</p>
               <p className="text-[10px] text-[var(--muted)] uppercase tracking-wider">{s.label}</p>
             </div>
           </div>
@@ -107,7 +107,7 @@ export default function DashboardPage() {
           <input
             type="text"
             placeholder="Search by product name, manufacturer, or industry..."
-            className="w-full pl-11 pr-4 py-3 bg-white/[0.03] border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/30 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-black/[0.03] dark:bg-white/[0.03] border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm focus:outline-none focus:border-[var(--accent-blue)] transition-colors"
           />
         </div>
         <button className="btn-ghost text-sm px-4 py-3 flex items-center gap-2 rounded-xl">
@@ -122,7 +122,7 @@ export default function DashboardPage() {
             Sample Scans
           </h2>
           <div className="flex-1 h-px bg-[var(--border)]" />
-          <span className="text-[10px] text-[var(--muted)] bg-white/5 px-2.5 py-1 rounded-full border border-[var(--border)]">
+          <span className="text-[10px] text-[var(--muted)] bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-full border border-[var(--border)]">
             Demo Data
           </span>
         </div>
@@ -135,16 +135,16 @@ export default function DashboardPage() {
           >
             <Link
               href={`/record/${rec.id}`}
-              className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-white/10 transition-all group block"
+              className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-[var(--accent-blue)]/50 transition-all group block"
             >
               <div className="flex items-center gap-4 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-white/5 flex items-center justify-center text-white/60 shrink-0 group-hover:text-white transition-colors">
+                <div className="w-11 h-11 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--muted)] shrink-0 group-hover:text-[var(--accent-blue)] transition-colors">
                   <FileText size={20} />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white truncate group-hover:text-[var(--accent-blue)] transition-colors">
+                  <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1 truncate group-hover:text-[var(--accent-blue)] transition-colors">
                     {rec.name}
-                  </p>
+                  </h3>
                   <p className="text-xs text-[var(--muted)] mt-0.5">
                     {rec.manufacturer} • {rec.industry} • {rec.date}
                   </p>

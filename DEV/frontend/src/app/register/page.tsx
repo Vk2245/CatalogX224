@@ -106,7 +106,7 @@ export default function RegisterPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-white text-black rounded-2xl mb-6 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
             <Box size={24} strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+          <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">
             Create your account
           </h1>
           <p className="text-[var(--secondary)]">
@@ -144,7 +144,7 @@ export default function RegisterPage() {
                     onChange={(e) => setUsername(e.target.value)}
                     required
                     placeholder="johndoe"
-                    className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
+                    className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
                   />
                 </div>
 
@@ -158,7 +158,7 @@ export default function RegisterPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="you@company.com"
-                    className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
+                    className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
                   />
                 </div>
 
@@ -173,12 +173,12 @@ export default function RegisterPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                       placeholder="Min 6 characters"
-                      className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all pr-12"
+                      className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all pr-12"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white transition-colors"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                     >
                       {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                     </button>
@@ -195,7 +195,7 @@ export default function RegisterPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
                     placeholder="Repeat password"
-                    className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
+                    className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
                   />
                 </div>
 
@@ -247,7 +247,7 @@ export default function RegisterPage() {
                         className={`flex items-center gap-2 text-xs font-medium px-3 py-2.5 rounded-xl border transition-all text-left ${
                           industry === ind
                             ? "bg-[var(--accent-blue)]/10 border-[var(--accent-blue)]/40 text-[var(--accent-blue)]"
-                            : "bg-white/[0.02] border-[var(--border)] text-[var(--secondary)] hover:border-white/15 hover:text-white"
+                            : "bg-black/[0.02] dark:bg-white/[0.02] border-[var(--border)] text-[var(--secondary)] hover:border-black/15 dark:hover:border-white/15 hover:text-[var(--foreground)]"
                         }`}
                       >
                         {industry === ind && (

@@ -77,9 +77,10 @@ def ocr_image_bytes(
     # For vision models, we need to construct the message with image content
     # litellm supports vision via the standard OpenAI image_url format
     import litellm
-    from config.settings import PROVIDER_MODELS, OLLAMA_BASE_URL
+    from config.llm_client import _get_model_string, _build_kwargs
 
-    model = PROVIDER_MODELS.get(provider, PROVIDER_MODELS["local"])
+    model = _get_model_string(provider)
+    kwargs = _build_kwargs(provider)
 
     messages = [
         {
@@ -96,10 +97,6 @@ def ocr_image_bytes(
         }
     ]
 
-    kwargs = {}
-    if provider.startswith("local"):
-        kwargs["api_base"] = OLLAMA_BASE_URL
-
     response = litellm.completion(
         model=model,
         messages=messages,
@@ -111,10 +108,12 @@ def ocr_image_bytes(
     return response.choices[0].message.content
 
 
+from config.settings import VISION_PROVIDER
+
 def process_pages_with_ocr(
     pdf_path: str,
     pages: list[dict[str, Any]],
-    provider: str = "local",
+    provider: str = VISION_PROVIDER,
 ) -> list[dict[str, Any]]:
     """
     Check each page and apply OCR where needed. Updates the page dicts

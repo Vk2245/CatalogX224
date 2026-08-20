@@ -160,6 +160,22 @@ class AuditLog(Base):
     )
 
 
+class ChatMessage(Base):
+    """Persists chat messages between users and the RAG assistant."""
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False, index=True)
+    conversation_id: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String(20), nullable=False)  # "user" or "assistant"
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    def __repr__(self) -> str:
+        return f"<ChatMessage {self.role} conv={self.conversation_id}>"
+
 # ---------------------------------------------------------------------------
 # Engine & Session
 # ---------------------------------------------------------------------------

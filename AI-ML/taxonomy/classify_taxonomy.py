@@ -89,6 +89,11 @@ def classify_record(
     Convenience function that extracts the relevant fields from the record
     and passes them to classify_product.
     """
+    if hasattr(record_dict, "model_dump"):
+        record_dict = record_dict.model_dump()
+    elif hasattr(record_dict, "dict"):
+        record_dict = record_dict.dict()
+        
     product_name = record_dict.get("product_name", "")
     description = record_dict.get("description", "")
 

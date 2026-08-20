@@ -47,7 +47,8 @@ def run_pipeline(
         
         # Check if we need OCR
         yield _yield_progress(10, "Checking for scanned pages...")
-        pages = process_pages_with_ocr(pdf_path, pages, provider=provider)
+        from config.settings import VISION_PROVIDER
+        pages = process_pages_with_ocr(pdf_path, pages, provider=VISION_PROVIDER)
             
         evidence = build_evidence(pdf_path, pages)
         

@@ -119,10 +119,12 @@ app.mount("/reports", StaticFiles(directory=str(REPORTS_DIR)), name="reports")
 from app.api.auth import router as auth_router
 from app.api.process import router as process_router
 from app.api.records import router as records_router
+from app.api.chat import router as chat_router
 
 app.include_router(auth_router)
 app.include_router(process_router)
 app.include_router(records_router)
+app.include_router(chat_router)
 
 
 # ---------------------------------------------------------------------------
@@ -147,6 +149,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8080,
         reload=True,
     )

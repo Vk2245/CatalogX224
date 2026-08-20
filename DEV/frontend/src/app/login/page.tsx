@@ -74,7 +74,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-white text-black rounded-2xl mb-6 shadow-[0_0_20px_rgba(255,255,255,0.1)]">
             <Box size={24} strokeWidth={2} />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+          <h1 className="text-3xl font-bold text-[var(--foreground)] tracking-tight mb-2">
             Welcome back
           </h1>
           <p className="text-[var(--secondary)]">
@@ -96,7 +96,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="you@company.com"
-                className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
+                className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all"
               />
             </div>
 
@@ -112,12 +112,12 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   placeholder="••••••••"
-                  className="w-full px-4 py-3 bg-white/5 border border-[var(--border)] rounded-xl text-white text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all pr-12"
+                  className="w-full px-4 py-3 bg-black/5 dark:bg-white/5 border border-[var(--border)] rounded-xl text-[var(--foreground)] text-sm placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-blue)]/50 focus:border-[var(--accent-blue)]/50 transition-all pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-white transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>

@@ -79,7 +79,7 @@ export default function Home() {
   return (
     <div className="flex flex-col relative z-10">
       {/* ─── Hero ─── */}
-      <section className="max-w-6xl mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
+      <section className="max-w-[1600px] mx-auto px-6 pt-24 pb-20 flex flex-col items-center text-center">
         {/* Badge */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -148,7 +148,7 @@ export default function Home() {
 
       {/* ─── Stats Strip ─── */}
       <section className="border-t border-b border-[var(--border)] bg-white/[0.01]">
-        <div className="max-w-6xl mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="max-w-[1600px] mx-auto px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((s, i) => (
             <motion.div
               key={s.label}
@@ -159,7 +159,7 @@ export default function Home() {
               className="flex flex-col items-center text-center"
             >
               <s.icon size={20} className="text-[var(--accent-blue)] mb-2" />
-              <span className="text-3xl font-extrabold text-white tracking-tight stat-glow">
+              <span className="text-3xl font-extrabold text-[var(--foreground)] tracking-tight stat-glow">
                 {s.value}
               </span>
               <span className="text-xs text-[var(--secondary)] mt-1 font-medium">
@@ -171,9 +171,9 @@ export default function Home() {
       </section>
 
       {/* ─── How It Works ─── */}
-      <section className="max-w-6xl mx-auto px-6 py-24">
+      <section className="max-w-[1600px] mx-auto px-6 py-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--foreground)] mb-4">
             How It Works
           </h2>
           <p className="text-[var(--secondary)] max-w-lg mx-auto">
@@ -189,9 +189,9 @@ export default function Home() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.12 }}
-              className="relative glass-panel rounded-2xl p-6 group hover:border-white/10 transition-colors"
+              className="relative glass-panel rounded-2xl p-6 group hover:border-black/10 dark:hover:border-white/10 transition-colors"
             >
-              <span className="text-4xl font-extrabold text-white/[0.04] absolute top-4 right-4">
+              <span className="text-4xl font-extrabold text-[var(--foreground)] opacity-10 absolute top-4 right-4">
                 {step.num}
               </span>
               <div className="flex items-center gap-2 mb-3">
@@ -205,7 +205,7 @@ export default function Home() {
                   />
                 )}
               </div>
-              <h3 className="text-base font-semibold text-white mb-2">
+              <h3 className="text-base font-semibold text-[var(--foreground)] mb-2">
                 {step.title}
               </h3>
               <p className="text-sm text-[var(--secondary)] leading-relaxed">
@@ -217,9 +217,9 @@ export default function Home() {
       </section>
 
       {/* ─── Features Grid ─── */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
+      <section className="max-w-[1600px] mx-auto px-6 pb-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--foreground)] mb-4">
             Built for Production
           </h2>
           <p className="text-[var(--secondary)] max-w-lg mx-auto">
@@ -242,7 +242,7 @@ export default function Home() {
               >
                 <f.icon size={20} />
               </div>
-              <h3 className="text-base font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-[var(--foreground)] mb-2">
                 {f.title}
               </h3>
               <p className="text-sm text-[var(--secondary)] leading-relaxed">
@@ -254,10 +254,10 @@ export default function Home() {
       </section>
 
       {/* ─── CTA Banner ─── */}
-      <section className="max-w-6xl mx-auto px-6 pb-24">
+      <section className="max-w-[1600px] mx-auto px-6 pb-24">
         <div className="glass-panel-strong rounded-3xl p-12 text-center relative overflow-hidden dot-pattern">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-violet-500/5 pointer-events-none" />
-          <h2 className="text-3xl font-bold text-white mb-4 relative z-10">
+          <h2 className="text-3xl font-bold text-[var(--foreground)] mb-4 relative z-10">
             Ready to extract intelligence?
           </h2>
           <p className="text-[var(--secondary)] mb-8 max-w-md mx-auto relative z-10">

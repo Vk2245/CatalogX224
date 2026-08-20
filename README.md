@@ -25,7 +25,7 @@ cd DEV\backend
 ..\..\..\.venv\Scripts\activate
 
 # 2. Start the Uvicorn server
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
 ```
 
 ---
@@ -47,3 +47,31 @@ npm run dev
 ```
 
 The frontend will be available at [http://localhost:3000](http://localhost:3000).
+
+---
+
+### 3. Start the Local AI Server (vLLM via WSL2)
+
+The AI-ML pipeline is configured to route extraction tasks to a local OpenAI-compatible server. For the fastest token generation speeds on hardware with limited VRAM (e.g. RTX 3050 6GB), we use **vLLM** running inside **WSL2**.
+
+**Steps to start vLLM inside WSL2 (Ubuntu):**
+
+1. Install system prerequisites:
+```bash
+sudo apt update
+sudo apt install python3-pip python3-venv
+```
+
+2. Create a virtual environment and install vLLM:
+```bash
+python3 -m venv vllm_env
+source vllm_env/bin/activate
+pip install vllm
+```
+
+3. Start the Inference Server (loads the 4-bit AWQ Qwen model):
+```bash
+VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_WSL2_ENABLE_PIN_MEMORY=1 python3 -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2-VL-2B-Instruct-AWQ --quantization awq --port 8000 --max-model-len 8192 --enforce-eager --gpu-memory-utilization 0.8
+```
+
+Once the vLLM server prints `Uvicorn running on http://0.0.0.0:8000`, the backend will automatically connect to it for all PDF extraction tasks!
