@@ -226,11 +226,11 @@ async def clear_chat_history(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    "\""
+    """
     Clear chat history for the current user.
     If conversation_id is provided, deletes only that conversation.
     Otherwise, deletes ALL conversations for the user.
-    "\""
+    """
     stmt = delete(ChatMessage).where(ChatMessage.user_id == user.id)
     if conversation_id:
         stmt = stmt.where(ChatMessage.conversation_id == conversation_id)
