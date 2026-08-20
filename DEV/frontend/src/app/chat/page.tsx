@@ -12,6 +12,13 @@ import {
   Plus,
 } from "lucide-react";
 
+interface ConversationSummary {
+  conversation_id: string;
+  last_message: string;
+  last_role: string;
+  last_at: string;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -19,6 +26,7 @@ interface Message {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const [historyList, setHistoryList] = useState<ConversationSummary[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
@@ -36,11 +44,28 @@ export default function ChatPage() {
       setConversationId(savedConvId);
       loadHistory(savedConvId);
     }
+    loadHistoryList();
   }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  
+  const loadHistoryList = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API}/api/chat/history`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setHistoryList(data.conversations || []);
+      }
+    } catch (e) {}
+  };
 
   const loadHistory = async (convId: string) => {
     const token = localStorage.getItem("token");
@@ -99,6 +124,7 @@ export default function ChatPage() {
       if (!conversationId) {
         setConversationId(data.conversation_id);
         localStorage.setItem("chatConversationId", data.conversation_id);
+        loadHistoryList();
       }
 
       const assistantMessage: Message = {
@@ -126,6 +152,7 @@ export default function ChatPage() {
     setMessages([]);
     setConversationId(null);
     localStorage.removeItem("chatConversationId");
+    loadHistoryList();
   };
 
   const handleClearHistory = async () => {
@@ -145,6 +172,7 @@ export default function ChatPage() {
       });
       
       handleNewConversation();
+      loadHistoryList();
     } catch (e) {
       console.error("Failed to clear history", e);
     }
@@ -182,8 +210,37 @@ export default function ChatPage() {
     );
   }
 
+  
   return (
-    <div className="flex flex-col h-[calc(100vh-3.5rem)] max-w-5xl mx-auto relative z-10">
+    <div className="flex h-[calc(100vh-3.5rem)] max-w-7xl mx-auto relative z-10 pt-4 pb-6 px-4 md:px-6 gap-6">
+      {/* Sidebar */}
+      <div className="w-64 flex-shrink-0 flex-col gap-4 hidden md:flex border border-[var(--border)] rounded-2xl glass-panel p-4 overflow-hidden">
+        <h2 className="text-xs font-semibold text-[var(--secondary)] uppercase tracking-widest px-1 mb-2">Past Conversations</h2>
+        <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+          {historyList.length === 0 ? (
+            <p className="text-xs text-[var(--muted)] px-1">No past conversations.</p>
+          ) : (
+            historyList.map(conv => (
+              <button
+                key={conv.conversation_id}
+                onClick={() => {
+                  setConversationId(conv.conversation_id);
+                  localStorage.setItem("chatConversationId", conv.conversation_id);
+                  loadHistory(conv.conversation_id);
+                }}
+                className={`w-full text-left p-3 rounded-xl transition-all ${conversationId === conv.conversation_id ? "bg-[var(--accent-blue)]/10 border border-[var(--accent-blue)]/20 text-[var(--accent-blue)]" : "bg-black/[0.02] dark:bg-white/[0.02] border border-transparent hover:border-[var(--border)] text-[var(--foreground)]"}`}
+              >
+                <p className="text-sm font-medium truncate mb-1">{conv.last_message}</p>
+                <p className="text-[10px] text-[var(--muted)]">{new Date(conv.last_at).toLocaleDateString()}</p>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col border border-[var(--border)] rounded-2xl overflow-hidden glass-panel">
+
       {/* Header */}
       <div className="px-6 py-4 flex items-center justify-between border-b border-[var(--border)]">
         <div className="flex items-center gap-3">
@@ -351,11 +408,13 @@ export default function ChatPage() {
             <Send size={16} />
           </button>
         </div>
+        
         <p className="text-[10px] text-[var(--muted)] mt-2 text-center">
           Responses are grounded in your scan data. The assistant cannot access
           other users&apos; records.
         </p>
       </div>
     </div>
+  </div>
   );
 }

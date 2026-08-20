@@ -56,7 +56,7 @@ export default function DashboardPage() {
 
   // Calculate stats
   let avgConfidence = 0;
-  if (records.length > 0) {
+  if (Array.isArray(records) && records.length > 0) {
     const sum = records.reduce((acc, r) => acc + (r.record_confidence || 0), 0);
     avgConfidence = Math.round((sum / records.length) * 100);
   }
@@ -84,9 +84,9 @@ export default function DashboardPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Analyses", value: records.length.toString(), icon: FileText },
+          { label: "Total Analyses", value: (records?.length || 0).toString(), icon: FileText },
           { label: "Avg Confidence", value: `${avgConfidence}%`, icon: BarChart3 },
-          { label: "This Week", value: records.length.toString(), icon: Clock },
+          { label: "This Week", value: (records?.length || 0).toString(), icon: Clock },
           { label: "Fast Path Hits", value: "0", icon: Zap },
         ].map((s, i) => (
           <div key={s.label} className="glass-panel rounded-xl p-4 flex items-center gap-3">
@@ -130,7 +130,7 @@ export default function DashboardPage() {
         
         {isLoading ? (
           <div className="text-center py-10 text-[var(--muted)]">Loading records...</div>
-        ) : records.length === 0 ? (
+        ) : !Array.isArray(records) || records.length === 0 ? (
           <div className="text-center py-10 text-[var(--muted)] glass-panel rounded-2xl">
             No product scans found. Upload a document to get started.
           </div>
