@@ -82,9 +82,9 @@ def detect_industry(
     Sends a sample of the document text to the LLM for classification.
     Returns an IndustryDetection with the industry key and metadata.
     """
-    # Use a sample of the text to keep tokens manageable
+    # Use a sample of the text to keep tokens manageable (Qwen 2B: 8192 token limit)
     full_text = evidence.get("full_text", "")
-    sample_text = full_text[:5000]
+    sample_text = full_text[:3000]
 
     source_meta = wrap_for_prompt(
         {"file": evidence.get("source_file", "unknown"), "pages": evidence.get("page_count", 0)},

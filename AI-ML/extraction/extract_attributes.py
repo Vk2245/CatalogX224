@@ -53,7 +53,8 @@ def extract_from_evidence(
     doc_text = evidence.get("full_markdown", evidence.get("full_text", ""))
 
     # Truncate if extremely long (avoid token limits on local models)
-    max_chars = 12000
+    # Qwen 2B has 8192 token context; ~3 chars/token, so 4000 chars ≈ 1300 tokens
+    max_chars = 4000
     if len(doc_text) > max_chars:
         doc_text = doc_text[:max_chars] + "\n\n[Document truncated for extraction]"
 

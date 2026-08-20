@@ -100,7 +100,7 @@ def get_structured_output(
     provider: str = DEFAULT_PROVIDER,
     temperature: float = 0.1,
     max_retries: int = 3,
-    max_tokens: int = 4096,
+    max_tokens: int = 2048,
 ) -> T:
     """
     Send a prompt to the LLM and return a validated Pydantic object.
@@ -133,13 +133,24 @@ def get_structured_output(
     else:
         client = instructor.from_litellm(litellm.completion)
 
+    # Dynamically cap max_tokens to fit within model context window (8192 for Qwen 2B)
+    if provider in ("local", "vllm"):
+        # Rough estimate: ~4 chars per token
+        total_prompt_chars = sum(len(m["content"]) for m in messages)
+        estimated_input_tokens = total_prompt_chars // 3  # conservative estimate
+        model_context_limit = 8192
+        safe_max_tokens = min(max_tokens, model_context_limit - estimated_input_tokens - 100)
+        safe_max_tokens = max(safe_max_tokens, 256)  # floor to avoid tiny outputs
+    else:
+        safe_max_tokens = max_tokens
+
     result = client.chat.completions.create(
         model=model,
         messages=messages,
         response_model=response_model,
         temperature=temperature,
         max_retries=max_retries,
-        max_tokens=max_tokens,
+        max_tokens=safe_max_tokens,
         **kwargs,
     )
 
