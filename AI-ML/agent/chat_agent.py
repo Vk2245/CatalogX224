@@ -123,7 +123,12 @@ def retrieve(state: ChatState) -> dict:
     if not records:
         return {"retrieved_context": "No product records found for this account. The user has not scanned any documents yet."}
 
-    question_lower = question.lower()
+    question_lower = question.lower().strip('?!., ')
+
+    # Check for simple greetings
+    greetings = ["hi", "hello", "hey", "how are you", "who are you", "what are you", "greetings", "good morning", "good evening"]
+    if question_lower in greetings:
+        return {"retrieved_context": ""}
 
     # Check if it's a broad/listing query
     broad_keywords = ["all", "every", "list", "show me", "what have", "how many", "summary", "overview"]
@@ -155,7 +160,7 @@ def generate(state: ChatState) -> dict:
 You help users understand their product scan history and analysis results.
 
 RULES:
-1. Be friendly, conversational, and helpful. If the user greets you, greet them back naturally!
+1. Be friendly, conversational, and helpful. If the user greets you (e.g., "hi", "hello"), just greet them back naturally and ask how you can help them. DO NOT summarize the product data unless asked.
 2. ONLY answer data-specific questions using the product data provided in the context below. Never invent data.
 3. If the user asks about product details not in the context, say "I don't have that information in your scan history."
 4. When comparing products, use clear formatting.
@@ -166,7 +171,9 @@ RULES:
 9. if user asks you to recommend some products for a specific purpose, recommend the products which are in the scan history and are relevant to the user's query.
 10. Guide the user about UI of the CatalogX platform
 11. When the user asks to compare products, use clear formatting.
-12. 
+12. Never hallucinate or make up data.
+13. If you don't have the answer, say "I don't have that information in your scan history."
+
 """
 
     # Build chat context
@@ -175,19 +182,17 @@ RULES:
     question = state["user_question"]
     provider = state.get("provider", DEFAULT_PROVIDER)
 
-    # Format chat history (last 6 turns max)
+    # Format chat history (last 10 turns max)
     history_text = ""
     if history:
-        recent = history[-6:]
+        recent = history[-10:]
         history_parts = [f"{m['role'].title()}: {m['content']}" for m in recent]
         history_text = "\n".join(history_parts) + "\n\n"
 
-    # Only inject the massive product data block if there is actually data retrieved, 
-    # and frame it as background knowledge, not a strict directive for every single turn.
-    prompt = f"""BACKGROUND KNOWLEDGE (USER'S PRODUCT DATA):
-{context}
+    # Only inject the massive product data block if there is actually data retrieved
+    background = f"BACKGROUND KNOWLEDGE (USER'S PRODUCT DATA):\n{context}\n\n" if context else ""
 
-{f"CONVERSATION HISTORY:{chr(10)}{history_text}" if history_text else ""}
+    prompt = f"""{background}{f"CONVERSATION HISTORY:{chr(10)}{history_text}" if history_text else ""}
 USER'S MESSAGE: {question}
 
 Respond to the user naturally."""

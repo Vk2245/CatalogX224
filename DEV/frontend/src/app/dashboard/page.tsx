@@ -28,7 +28,7 @@ interface RecordType {
 }
 
 export default function DashboardPage() {
-  const [records, setRecords] = useState<RecordType[]>([]);
+  const [records, setRecords] = useState([] as RecordType[]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -55,9 +55,11 @@ export default function DashboardPage() {
   }, []);
 
   // Calculate stats
-  const avgConfidence = records.length 
-    ? Math.round(records.reduce((acc, r) => acc + (r.record_confidence || 0), 0) / records.length * 100) 
-    : 0;
+  let avgConfidence = 0;
+  if (records.length > 0) {
+    const sum = records.reduce((acc, r) => acc + (r.record_confidence || 0), 0);
+    avgConfidence = Math.round((sum / records.length) * 100);
+  }
 
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-8 relative z-10">
