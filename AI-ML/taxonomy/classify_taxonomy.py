@@ -25,10 +25,12 @@ class TaxonomyClassification(BaseModel):
     family: str = Field(description="The family name within the segment")
     product_class: str = Field(description="The specific class name")
     confidence: float = Field(
+        default=0.85,
         ge=0.0, le=1.0,
         description="How confident the classification is, 0.0 to 1.0",
     )
     reasoning: str = Field(
+        default="Not provided by model",
         description="Brief explanation of why this category was chosen"
     )
 
@@ -42,7 +44,9 @@ Rules:
 - If multiple categories could fit, pick the most specific one
 - Set confidence lower if the match is ambiguous
 - Explain your reasoning briefly
-- If nothing fits well, use code 99000000 (General/Other)"""
+- If nothing fits well, use code 99000000 (General/Other)
+
+IMPORTANT: You must follow the requested JSON schema EXACTLY. Ensure you include ALL required fields, including any `confidence` and `reasoning` fields. Do not skip top-level fields."""
 
 
 def classify_product(

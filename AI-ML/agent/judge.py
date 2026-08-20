@@ -35,6 +35,7 @@ class JudgeVerdict(BaseModel):
         description="Which missing attributes are still not found in this content",
     )
     reasoning: str = Field(
+        default="Not provided",
         description="Brief explanation of the quality assessment",
     )
 

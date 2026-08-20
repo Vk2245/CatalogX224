@@ -47,6 +47,7 @@ class GeneratedRuleSet(BaseModel):
         description="List of 5-8 safety/compliance rules for this industry"
     )
     reasoning: str = Field(
+        default="Not provided",
         description="Brief explanation of how the rules were selected"
     )
 
