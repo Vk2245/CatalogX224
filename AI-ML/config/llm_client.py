@@ -95,11 +95,12 @@ def get_completion(
 
 def get_structured_output(
     prompt: str,
-    response_model: Type[T],
+    response_model: type[T],
     system_prompt: str = "",
     provider: str = DEFAULT_PROVIDER,
     temperature: float = 0.1,
     max_retries: int = 3,
+    max_tokens: int = 4096,
 ) -> T:
     """
     Send a prompt to the LLM and return a validated Pydantic object.
@@ -138,6 +139,7 @@ def get_structured_output(
         response_model=response_model,
         temperature=temperature,
         max_retries=max_retries,
+        max_tokens=max_tokens,
         **kwargs,
     )
 
