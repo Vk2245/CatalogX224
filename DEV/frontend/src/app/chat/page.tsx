@@ -128,6 +128,28 @@ export default function ChatPage() {
     localStorage.removeItem("chatConversationId");
   };
 
+  const handleClearHistory = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      // Clear specific conversation if active, else clear all
+      const url = conversationId 
+        ? `${API}/api/chat/history?conversation_id=${conversationId}`
+        : `${API}/api/chat/history`;
+        
+      await fetch(url, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      handleNewConversation();
+    } catch (e) {
+      console.error("Failed to clear history", e);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -177,14 +199,24 @@ export default function ChatPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleNewConversation}
-          className="btn-ghost text-xs px-3 py-2 rounded-lg flex items-center gap-1.5"
-          title="New conversation"
-        >
-          <Plus size={14} />
-          New Chat
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleClearHistory}
+            className="btn-ghost text-xs px-3 py-2 rounded-lg flex items-center gap-1.5 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+            title="Clear chat history"
+          >
+            <Trash2 size={14} />
+            Clear
+          </button>
+          <button
+            onClick={handleNewConversation}
+            className="btn-ghost text-xs px-3 py-2 rounded-lg flex items-center gap-1.5"
+            title="New conversation"
+          >
+            <Plus size={14} />
+            New Chat
+          </button>
+        </div>
       </div>
 
       {/* Messages Area */}

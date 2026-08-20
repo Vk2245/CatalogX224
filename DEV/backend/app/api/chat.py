@@ -213,3 +213,29 @@ async def get_chat_history(
         })
 
     return {"conversations": conversations}
+
+# ---------------------------------------------------------------------------
+# DELETE /api/chat/history - Clear chat history
+# ---------------------------------------------------------------------------
+
+from sqlalchemy import delete
+
+@router.delete("/history")
+async def clear_chat_history(
+    conversation_id: str | None = None,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    "\""
+    Clear chat history for the current user.
+    If conversation_id is provided, deletes only that conversation.
+    Otherwise, deletes ALL conversations for the user.
+    "\""
+    stmt = delete(ChatMessage).where(ChatMessage.user_id == user.id)
+    if conversation_id:
+        stmt = stmt.where(ChatMessage.conversation_id == conversation_id)
+    
+    await db.execute(stmt)
+    await db.commit()
+    
+    return {"message": "Chat history cleared successfully"}
