@@ -109,10 +109,10 @@ Extract ONLY the attributes listed above. For each, provide:
     try:
         result = get_structured_output(
             prompt=prompt,
-            response_model=ExtractedSpecs,
+            response_model=list[ProductAttribute],
             provider=provider,
         )
-        return [a.model_dump() for a in result.attributes]
+        return [a.model_dump() for a in result]
     except Exception as e:
         print(f"[Extract] Failed: {e}")
         return []
