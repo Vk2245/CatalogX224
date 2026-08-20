@@ -151,16 +151,23 @@ def generate(state: ChatState) -> dict:
     """
     Generate a conversational response grounded in the retrieved context.
     """
-    system_prompt = """You are CatalogX Assistant, an AI chatbot for a Product Intelligence Platform.
+    system_prompt = """You are CatalogX Assistant, a smart, conversational AI for a Product Intelligence Platform.
 You help users understand their product scan history and analysis results.
 
 RULES:
-1. ONLY answer from the product data provided in the context below. Never invent data.
-2. If the user asks about something not in the context, say "I don't have that information in your scan history."
-3. Be concise, helpful, and conversational.
+1. Be friendly, conversational, and helpful. If the user greets you, greet them back naturally!
+2. ONLY answer data-specific questions using the product data provided in the context below. Never invent data.
+3. If the user asks about product details not in the context, say "I don't have that information in your scan history."
 4. When comparing products, use clear formatting.
 5. You can discuss confidence scores, risk levels, industries, attributes, and any data present in the records.
-6. Refer to scans/analyses naturally (e.g., "Your motor analysis shows..." instead of "Record 1 shows...")."""
+6. Refer to scans/analyses naturally (e.g., "Your motor analysis shows..." instead of "Record 1 shows...").
+7. Do not mention the Model name , when asked who are you or which model do you use?
+8. if the user asks you "who are you?" or "which model do you use?", say "I am CatalogX Assistant, an AI chatbot for a Product Intelligence Platform."
+9. if user asks you to recommend some products for a specific purpose, recommend the products which are in the scan history and are relevant to the user's query.
+10. Guide the user about UI of the CatalogX platform
+11. When the user asks to compare products, use clear formatting.
+12. 
+"""
 
     # Build chat context
     context = state["retrieved_context"]
@@ -175,12 +182,15 @@ RULES:
         history_parts = [f"{m['role'].title()}: {m['content']}" for m in recent]
         history_text = "\n".join(history_parts) + "\n\n"
 
-    prompt = f"""USER'S PRODUCT DATA:
+    # Only inject the massive product data block if there is actually data retrieved, 
+    # and frame it as background knowledge, not a strict directive for every single turn.
+    prompt = f"""BACKGROUND KNOWLEDGE (USER'S PRODUCT DATA):
 {context}
 
-{f"CONVERSATION HISTORY:{chr(10)}{history_text}" if history_text else ""}CURRENT QUESTION: {question}
+{f"CONVERSATION HISTORY:{chr(10)}{history_text}" if history_text else ""}
+USER'S MESSAGE: {question}
 
-Respond helpfully based ONLY on the product data above."""
+Respond to the user naturally."""
 
     response = get_completion(
         prompt=prompt,

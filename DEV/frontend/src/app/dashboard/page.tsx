@@ -13,50 +13,52 @@ import {
   Zap,
 } from "lucide-react";
 
-const mockRecords = [
-  {
-    id: "demo",
-    name: "Pro-Series Industrial Motor 400V",
-    manufacturer: "IndustrialCorp",
-    industry: "Electrical",
-    confidence: 94,
-    risk: "Low",
-    status: "completed",
-    date: "2026-08-16",
-  },
-  {
-    id: "2",
-    name: "Paracetamol 500mg Tablet",
-    manufacturer: "PharmaGen",
-    industry: "Pharma",
-    confidence: 89,
-    risk: "Medium",
-    status: "completed",
-    date: "2026-08-15",
-  },
-  {
-    id: "3",
-    name: "Organic Green Tea",
-    manufacturer: "NatureLeaf",
-    industry: "Food",
-    confidence: 91,
-    risk: "Low",
-    status: "completed",
-    date: "2026-08-14",
-  },
-  {
-    id: "4",
-    name: "NPK 20-20-20 Fertilizer",
-    manufacturer: "AgriTech",
-    industry: "Agriculture",
-    confidence: 76,
-    risk: "High",
-    status: "completed",
-    date: "2026-08-13",
-  },
-];
+import { useEffect, useState } from "react";
+
+interface RecordType {
+  id: string;
+  document_id: number;
+  product_name: string | null;
+  manufacturer: string | null;
+  industry: string | null;
+  risk_level: string | null;
+  record_confidence: number | null;
+  uploaded_at: string | null;
+  status: string;
+}
 
 export default function DashboardPage() {
+  const [records, setRecords] = useState<RecordType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRecords = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${API}/api/records/`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setRecords(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch records:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRecords();
+  }, []);
+
+  // Calculate stats
+  const avgConfidence = records.length 
+    ? Math.round(records.reduce((acc, r) => acc + (r.record_confidence || 0), 0) / records.length * 100) 
+    : 0;
+
   return (
     <div className="max-w-[1600px] mx-auto px-6 py-12 space-y-8 relative z-10">
       {/* Header */}
@@ -80,10 +82,10 @@ export default function DashboardPage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: "Total Analyses", value: mockRecords.length.toString(), icon: FileText },
-          { label: "Avg Confidence", value: "87.5%", icon: BarChart3 },
-          { label: "This Week", value: "3", icon: Clock },
-          { label: "Fast Path Hits", value: "2", icon: Zap },
+          { label: "Total Analyses", value: records.length.toString(), icon: FileText },
+          { label: "Avg Confidence", value: `${avgConfidence}%`, icon: BarChart3 },
+          { label: "This Week", value: records.length.toString(), icon: Clock },
+          { label: "Fast Path Hits", value: "0", icon: Zap },
         ].map((s, i) => (
           <div key={s.label} className="glass-panel rounded-xl p-4 flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--accent-blue)]">
@@ -119,37 +121,42 @@ export default function DashboardPage() {
       <div className="space-y-3">
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-sm font-semibold text-[var(--secondary)] uppercase tracking-widest">
-            Sample Scans
+            Recent Scans
           </h2>
           <div className="flex-1 h-px bg-[var(--border)]" />
-          <span className="text-[10px] text-[var(--muted)] bg-black/5 dark:bg-white/5 px-2.5 py-1 rounded-full border border-[var(--border)]">
-            Demo Data
-          </span>
         </div>
-        {mockRecords.map((rec, i) => (
-          <motion.div
-            key={rec.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.06 }}
-          >
-            <Link
-              href={`/record/${rec.id}`}
-              className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-[var(--accent-blue)]/50 transition-all group block"
+        
+        {isLoading ? (
+          <div className="text-center py-10 text-[var(--muted)]">Loading records...</div>
+        ) : records.length === 0 ? (
+          <div className="text-center py-10 text-[var(--muted)] glass-panel rounded-2xl">
+            No product scans found. Upload a document to get started.
+          </div>
+        ) : (
+          records.map((rec, i) => (
+            <motion.div
+              key={rec.document_id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
             >
-              <div className="flex items-center gap-4 min-w-0">
-                <div className="w-11 h-11 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--muted)] shrink-0 group-hover:text-[var(--accent-blue)] transition-colors">
-                  <FileText size={20} />
+              <Link
+                href={`/record/${rec.document_id}`}
+                className="glass-panel rounded-2xl p-5 flex items-center justify-between gap-4 hover:border-[var(--accent-blue)]/50 transition-all group block"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="w-11 h-11 rounded-xl bg-black/5 dark:bg-white/5 flex items-center justify-center text-[var(--muted)] shrink-0 group-hover:text-[var(--accent-blue)] transition-colors">
+                    <FileText size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1 truncate group-hover:text-[var(--accent-blue)] transition-colors">
+                      {rec.product_name || "Unknown Product"}
+                    </h3>
+                    <p className="text-xs text-[var(--muted)] mt-0.5">
+                      {rec.manufacturer || "Unknown Mfr"} • {rec.industry || "Unknown Industry"} • {rec.uploaded_at ? new Date(rec.uploaded_at).toLocaleDateString() : ""}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <h3 className="text-sm font-semibold text-[var(--foreground)] mb-1 truncate group-hover:text-[var(--accent-blue)] transition-colors">
-                    {rec.name}
-                  </h3>
-                  <p className="text-xs text-[var(--muted)] mt-0.5">
-                    {rec.manufacturer} • {rec.industry} • {rec.date}
-                  </p>
-                </div>
-              </div>
 
               <div className="flex items-center gap-4 shrink-0">
                 {/* Confidence */}
@@ -157,31 +164,31 @@ export default function DashboardPage() {
                   <div className="w-12 h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
-                        rec.confidence >= 90
+                        (rec.record_confidence || 0) >= 0.9
                           ? "bg-emerald-400"
-                          : rec.confidence >= 80
+                          : (rec.record_confidence || 0) >= 0.8
                           ? "bg-amber-400"
                           : "bg-red-400"
                       }`}
-                      style={{ width: `${rec.confidence}%` }}
+                      style={{ width: `${(rec.record_confidence || 0) * 100}%` }}
                     />
                   </div>
                   <span className="text-xs font-mono text-[var(--secondary)] w-8">
-                    {rec.confidence}%
+                    {Math.round((rec.record_confidence || 0) * 100)}%
                   </span>
                 </div>
 
                 {/* Risk Badge */}
                 <span
                   className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full ${
-                    rec.risk === "Low"
+                    rec.risk_level === "low"
                       ? "bg-emerald-500/10 text-emerald-400"
-                      : rec.risk === "Medium"
+                      : rec.risk_level === "medium"
                       ? "bg-amber-500/10 text-amber-400"
                       : "bg-red-500/10 text-red-400"
                   }`}
                 >
-                  {rec.risk}
+                  {rec.risk_level || "Unknown"}
                 </span>
 
                 <ChevronRight
