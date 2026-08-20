@@ -7,18 +7,23 @@ category from the taxonomy using an LLM call. No training data needed.
 
 import sys
 import json
-from typing import Optional
+from typing import Annotated, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, BeforeValidator
 
 from config.llm_client import get_structured_output
 from taxonomy.categories import get_taxonomy_summary, find_category_by_code
 
 
+def _coerce_to_str(v):
+    """Coerce int/float to str so Pydantic doesn't reject numeric codes."""
+    return str(v) if not isinstance(v, str) else v
+
+
 class TaxonomyClassification(BaseModel):
     """Structured output from the taxonomy classifier."""
 
-    category_code: str = Field(
+    category_code: Annotated[str, BeforeValidator(_coerce_to_str)] = Field(
         description="The best-matching taxonomy code from the provided list"
     )
     segment: str = Field(description="The top-level segment name")
