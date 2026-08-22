@@ -710,3 +710,7 @@ Updates:
 - Enabled OCR vision capabilities directly via vLLM on a single inference server, leaving ~3.5GB VRAM free for large PDF context and avoiding OOM errors.
 - Consolidated all provider configurations in settings.py to route both text and vision traffic to vLLM (VISION_PROVIDER='vllm').
 =========================================
+
+- Fixed Demo Mode (Admin and User) 401 Unauthorized errors by creating a valid JWT generation endpoint /api/auth/demo.
+- Updated Chatbot context in chat_agent.py to provide users with a comprehensive guide on platform features, usage steps, and limitations.
+- Integrated new Unilog Dataset requirements (pending ML/DL implementation plan).
