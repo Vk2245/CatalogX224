@@ -12,28 +12,41 @@ from typing import Optional
 
 # Minimal CSS for clean rendered output
 REPORT_CSS = """
+@page {
+    margin: 0.4in;
+    @bottom-right {
+        content: counter(page) " / " counter(pages);
+        font-family: 'Inter', system-ui, sans-serif;
+        font-size: 9pt;
+        color: #52525b;
+    }
+}
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 0 20px;
-    color: #333;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    color: #f4f4f5;
+    background-color: #030303;
     line-height: 1.6;
 }
-h1 { color: #1a1a2e; border-bottom: 2px solid #16213e; padding-bottom: 8px; }
-h2 { color: #16213e; margin-top: 24px; }
-h3 { color: #0f3460; }
-table { border-collapse: collapse; width: 100%; margin: 16px 0; }
-th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
-th { background-color: #16213e; color: white; }
-tr:nth-child(even) { background-color: #f8f9fa; }
-.confidence-high { color: #28a745; font-weight: bold; }
-.confidence-medium { color: #ffc107; font-weight: bold; }
-.confidence-low { color: #dc3545; font-weight: bold; }
-.risk-critical { background-color: #f8d7da; padding: 8px; border-left: 4px solid #dc3545; margin: 8px 0; }
-.risk-high { background-color: #fff3cd; padding: 8px; border-left: 4px solid #ffc107; margin: 8px 0; }
-.risk-medium { background-color: #d1ecf1; padding: 8px; border-left: 4px solid #17a2b8; margin: 8px 0; }
-code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; }
+h1 { color: #ffffff; border-bottom: 2px solid #3b82f6; padding-bottom: 12px; font-weight: 800; font-size: 24pt; margin-bottom: 16px; letter-spacing: -0.02em; }
+h2 { color: #8b5cf6; margin-top: 32px; font-weight: 700; font-size: 14pt; letter-spacing: 0.02em; border-bottom: 1px solid rgba(139, 92, 246, 0.2); padding-bottom: 6px; text-transform: uppercase; }
+h3 { color: #a1a1aa; font-size: 12pt; font-weight: 600; }
+table { border-collapse: separate; border-spacing: 0; width: 100%; margin: 24px 0; font-size: 10pt; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; overflow: hidden; }
+th, td { border-bottom: 1px solid rgba(255, 255, 255, 0.05); border-right: 1px solid rgba(255, 255, 255, 0.05); padding: 12px 16px; text-align: left; }
+th:last-child, td:last-child { border-right: none; }
+tr:last-child th, tr:last-child td { border-bottom: none; }
+th { background-color: #111113; color: #f4f4f5; font-size: 9pt; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; }
+tr:nth-child(even) { background-color: #0a0a0a; }
+tr:nth-child(odd) { background-color: #030303; }
+.confidence-high { color: #10b981; font-weight: 600; }
+.confidence-medium { color: #f59e0b; font-weight: 600; }
+.confidence-low { color: #ef4444; font-weight: 600; }
+.risk-critical { background-color: rgba(239, 68, 68, 0.1); padding: 12px; border-left: 4px solid #ef4444; margin: 12px 0; border-radius: 0 6px 6px 0; color: #fca5a5; font-weight: 500; }
+.risk-high { background-color: rgba(245, 158, 11, 0.1); padding: 12px; border-left: 4px solid #f59e0b; margin: 12px 0; border-radius: 0 6px 6px 0; color: #fcd34d; font-weight: 500; }
+.risk-medium { background-color: rgba(59, 130, 246, 0.1); padding: 12px; border-left: 4px solid #3b82f6; margin: 12px 0; border-radius: 0 6px 6px 0; color: #93c5fd; font-weight: 500; }
+code { background-color: #111113; padding: 4px 6px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9pt; color: #3b82f6; border: 1px solid rgba(255, 255, 255, 0.1); }
 """
 
 

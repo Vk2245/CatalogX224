@@ -42,38 +42,6 @@ interface ProductRecord {
   risks: { rule: string; status: string }[];
 }
 
-const DEMO_DATA: ProductRecord = {
-  product_name: "Pro-Series Industrial Motor 400V",
-  manufacturer: "IndustrialCorp",
-  part_number: "MOT-400V-X9",
-  industry: "Electrical Engineering",
-  category: "Motors & Drives / AC Motors",
-  record_confidence: 0.94,
-  validation_passed: true,
-  risk_level: "Low",
-  content_hash:
-    "8f434346648f6b96df89dda901c5176b10a6d83961dd3c1ac88b59b2dc327aa4",
-  record_data: {
-    attributes: [
-      { name: "Operating Voltage", value: 400, unit: "V", confidence: 0.98, source_text: '"Rated for 400V AC three-phase operation" — Page 2' },
-      { name: "Power Output", value: 15, unit: "kW", confidence: 0.95, source_text: '"Delivers a maximum output of 15kW continuous duty" — Page 3' },
-      { name: "IP Rating", value: "IP65", confidence: 0.89, source_text: '"Enclosure rated IP65 against dust ingress and water jets" — Page 4' },
-      { name: "Operating Temp", value: "-20 to +60", unit: "°C", confidence: 0.92, source_text: '"Ambient operating temperature range: -20°C to +60°C" — Page 2' },
-      { name: "Efficiency Class", value: "IE3", confidence: 0.75, source_text: 'Agent-sourced: IEC 60034-30-1 Premium Efficiency classification' },
-      { name: "Weight", value: 42, unit: "kg", confidence: 0.88, source_text: '"Net weight approx. 42 kg without mounting bracket" — Page 5' },
-      { name: "Frame Size", value: "160M", confidence: 0.91, source_text: '"Standard IEC frame size 160M" — Page 1' },
-      { name: "Insulation Class", value: "F", confidence: 0.87, source_text: '"Class F insulation with Class B temperature rise" — Page 3' },
-    ],
-  },
-  risks: [
-    { rule: "CE marking present", status: "pass" },
-    { rule: "Voltage rating within standard range", status: "pass" },
-    { rule: "IP rating adequate for industrial use", status: "pass" },
-    { rule: "Operating temperature range documented", status: "pass" },
-    { rule: "Efficiency class meets EU regulation", status: "pass" },
-    { rule: "Insulation class appropriate for power rating", status: "pass" },
-  ],
-};
 
 export default function RecordPage({ params }: { params: { id: string } }) {
   const [record, setRecord] = useState<ProductRecord | null>(null);
@@ -83,11 +51,49 @@ export default function RecordPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState<"attributes" | "risks">("attributes");
 
   useEffect(() => {
-    // Simulate API fetch — demo loads instantly
-    setTimeout(() => {
-      setRecord(DEMO_DATA);
-      setLoading(false);
-    }, 600);
+    async function fetchRecord() {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/login";
+          return;
+        }
+        
+        const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const res = await fetch(`${API}/api/records/${params.id}`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+        
+        if (!res.ok) throw new Error("Failed to fetch record");
+        
+        const data = await res.json();
+        
+        if (data.product_record) {
+          // Map backend data to frontend interface
+          setRecord({
+            product_name: data.product_record.product_name || "Unknown Product",
+            manufacturer: data.product_record.manufacturer || "Unknown Manufacturer",
+            part_number: data.product_record.part_number || "N/A",
+            industry: data.product_record.industry || "General",
+            category: data.product_record.category || "Uncategorized",
+            record_confidence: data.product_record.record_confidence || 0,
+            validation_passed: data.product_record.validation_passed || false,
+            risk_level: data.product_record.risk_level || "Unknown",
+            content_hash: data.product_record.content_hash || "",
+            record_data: data.product_record.record_data || { attributes: [] },
+            risks: data.product_record.risks || [],
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching record:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    fetchRecord();
   }, [params.id]);
 
   // ── Export JSON (working) ──
@@ -104,73 +110,36 @@ export default function RecordPage({ params }: { params: { id: string } }) {
     URL.revokeObjectURL(url);
   }, [record]);
 
-  // ── Export PDF (working — generates a styled HTML and triggers print) ──
-  const handleExportPDF = useCallback(() => {
+  // ── Export PDF (Download fixed template from backend) ──
+  const handleExportPDF = useCallback(async () => {
     if (!record) return;
-    const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8">
-<title>${record.product_name} — CatalogX Report</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 48px; color: #1a1a1a; }
-  .header { border-bottom: 2px solid #111; padding-bottom: 20px; margin-bottom: 32px; }
-  h1 { font-size: 28px; font-weight: 700; }
-  .meta { color: #666; font-size: 13px; margin-top: 6px; }
-  .badge { display: inline-block; background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 12px; text-transform: uppercase; }
-  .section { margin-bottom: 28px; }
-  .section-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #888; margin-bottom: 14px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 1px; padding: 8px 0; border-bottom: 1px solid #eee; }
-  td { padding: 10px 0; border-bottom: 1px solid #f5f5f5; font-size: 13px; }
-  .conf-bar { display: inline-block; height: 6px; border-radius: 3px; }
-  .hash { font-family: monospace; font-size: 11px; color: #666; word-break: break-all; background: #f5f5f5; padding: 12px; border-radius: 8px; }
-  .footer { margin-top: 40px; text-align: center; color: #ccc; font-size: 11px; }
-  @media print { body { padding: 24px; } }
-</style></head>
-<body>
-<div class="header">
-  <h1>${record.product_name}</h1>
-  <p class="meta">${record.manufacturer} &bull; ${record.part_number} &bull; ${record.industry}</p>
-  <p class="meta" style="margin-top:8px">
-    AI Confidence: <strong>${(record.record_confidence * 100).toFixed(0)}%</strong> &nbsp;
-    Risk Level: <span class="badge">${record.risk_level}</span>
-  </p>
-</div>
-<div class="section">
-  <div class="section-title">Extracted Specifications</div>
-  <table>
-    <tr><th>Attribute</th><th>Value</th><th>Confidence</th><th>Source</th></tr>
-    ${record.record_data.attributes.map(a => `
-    <tr>
-      <td><strong>${a.name}</strong></td>
-      <td>${a.value}${a.unit ? ' ' + a.unit : ''}</td>
-      <td>${(a.confidence * 100).toFixed(0)}%</td>
-      <td style="font-size:11px;color:#888;">${a.source_text || '—'}</td>
-    </tr>`).join('')}
-  </table>
-</div>
-<div class="section">
-  <div class="section-title">Safety & Compliance</div>
-  <table>
-    <tr><th>Rule</th><th>Status</th></tr>
-    ${record.risks.map(r => `
-    <tr><td>${r.rule}</td><td style="color:${r.status === 'pass' ? '#2e7d32' : '#c62828'}; font-weight:600;">${r.status.toUpperCase()}</td></tr>`).join('')}
-  </table>
-</div>
-<div class="section">
-  <div class="section-title">Tamper-Proof Hash</div>
-  <div class="hash">${record.content_hash}</div>
-</div>
-<div class="footer">Generated by CatalogX &bull; ${new Date().toLocaleDateString()}</div>
-</body></html>`;
-
-    const printWindow = window.open("", "_blank");
-    if (printWindow) {
-      printWindow.document.write(html);
-      printWindow.document.close();
-      setTimeout(() => printWindow.print(), 300);
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      
+      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      const timestamp = new Date().getTime();
+      const res = await fetch(`${API}/api/records/${params.id}/pdf?t=${timestamp}`, {
+        headers: { "Authorization": `Bearer ${token}` },
+        cache: "no-store"
+      });
+      
+      if (!res.ok) throw new Error("Failed to download PDF");
+      
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Report_${record.product_name.replace(/\s+/g, "_")}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error downloading PDF:", err);
+      alert("Failed to download PDF report. It might still be generating.");
     }
-  }, [record]);
+  }, [record, params.id]);
 
   const copyHash = () => {
     if (!record) return;
@@ -501,57 +470,20 @@ export default function RecordPage({ params }: { params: { id: string } }) {
             </p>
           </div>
 
-          {/* Agent Insights */}
-          <div className="glass-panel rounded-2xl p-5 border-blue-500/10">
-            <h3 className="text-xs font-semibold text-blue-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-              <Bot size={14} /> Agent Activity
-            </h3>
-            <div className="space-y-3">
-              <div className="bg-blue-500/5 border border-blue-500/10 rounded-xl p-3.5">
-                <p className="text-xs text-blue-200/80 leading-relaxed">
-                  <strong className="text-blue-300">Efficiency Class</strong>{" "}
-                  was missing from the PDF. Autonomous web agent searched IEC
-                  60034-30-1 databases and identified this motor as{" "}
-                  <strong className="text-white">IE3 Premium Efficiency</strong>{" "}
-                  with 75% confidence.
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-                <span>Research tier used</span>
-                <span className="text-[var(--accent-blue)] font-semibold">
-                  Tier 1 (DDG + Jina)
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs text-[var(--muted)]">
-                <span>Judge score</span>
-                <span className="text-emerald-400 font-semibold">0.82 PASS</span>
-              </div>
-            </div>
-          </div>
-
           {/* Validation Status */}
           <div className="glass-panel rounded-2xl p-5">
             <h3 className="text-xs font-semibold text-[var(--secondary)] uppercase tracking-wider mb-3">
               Validation
             </h3>
             <div className="space-y-2.5">
-              {[
-                { label: "Required fields", ok: true },
-                { label: "Numeric ranges", ok: true },
-                { label: "Unit consistency", ok: true },
-                { label: "Duplicate check", ok: true },
-              ].map((v) => (
-                <div
-                  key={v.label}
-                  className="flex items-center justify-between text-xs"
-                >
-                  <span className="text-[var(--secondary)]">{v.label}</span>
-                  <CheckCircle2
-                    size={14}
-                    className="text-emerald-400"
-                  />
-                </div>
-              ))}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-[var(--secondary)]">Data validation passed</span>
+                {record.validation_passed ? (
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                ) : (
+                  <ShieldAlert size={14} className="text-red-400" />
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -61,12 +61,14 @@ Scoring guide:
 - 0.0: Content is completely irrelevant or empty"""
 
 
+from config.settings import DEFAULT_PROVIDER
+
 def judge_content(
     content: str,
     product_name: str,
     missing_attributes: list[str],
     threshold: float = QUALITY_THRESHOLD,
-    provider: str = "local",
+    provider: str = DEFAULT_PROVIDER,
 ) -> JudgeVerdict:
     """
     Evaluate whether scraped content is good enough to extract
@@ -129,10 +131,9 @@ def quick_relevance_check(
     return matches >= max(1, len(name_parts) // 2)
 
 
-# ---------------------------------------------------------------------------
+# ----------------------------------------------------------------
 # CLI: test the judge
-# ---------------------------------------------------------------------------
-
+# ----------------------------------------------------------------
 if __name__ == "__main__":
     if len(sys.argv) < 4:
         print("Usage: python -m agent.judge <content_file_or_text> <product_name> <missing_attr1,missing_attr2,...>")

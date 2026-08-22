@@ -71,7 +71,10 @@ pip install vllm
 
 3. Start the Inference Server (loads the 4-bit AWQ Qwen model):
 ```bash
-VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_WSL2_ENABLE_PIN_MEMORY=1 python3 -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2-VL-2B-Instruct-AWQ --quantization awq --port 8000 --max-model-len 8192 --enforce-eager --gpu-memory-utilization 0.8
+VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_WSL2_ENABLE_PIN_MEMORY=1 python3 -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2-VL-2B-Instruct-AWQ --quantization awq --port 8000 --max-model-len 20480 --enforce-eager --gpu-memory-utilization 0.8
 ```
 
 Once the vLLM server prints `Uvicorn running on http://0.0.0.0:8000`, the backend will automatically connect to it for all PDF extraction tasks!
+
+
+VLLM_USE_FLASHINFER_SAMPLER=0 VLLM_WSL2_ENABLE_PIN_MEMORY=1 python3 -m vllm.entrypoints.openai.api_server --model Qwen/Qwen2-VL-2B-Instruct-AWQ --quantization awq --host 0.0.0.0 --port 8000 --max-model-len 20480 --enforce-eager --gpu-memory-utilization 0.8

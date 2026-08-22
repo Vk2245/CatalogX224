@@ -73,7 +73,7 @@ ALLOWED_EXTENSIONS: set[str] = {".pdf"}
 # AI/ML Provider
 # ---------------------------------------------------------------------------
 
-DEFAULT_PROVIDER: str = os.getenv("DEFAULT_PROVIDER", "local")
+DEFAULT_PROVIDER: str = os.getenv("DEFAULT_PROVIDER", "vllm")
 GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
 GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
 

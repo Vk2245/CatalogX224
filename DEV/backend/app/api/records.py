@@ -5,6 +5,7 @@ Provides history of all analyzed products for the authenticated user.
 """
 
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -139,3 +140,70 @@ async def delete_record(
     await db.delete(doc)
 
     return {"message": f"Document {doc_id} and all associated records deleted."}
+
+# ---------------------------------------------------------------------------
+# REGENERATE ALL PDFs (Temporary)
+# ---------------------------------------------------------------------------
+
+@router.get("/admin/regenerate_all_pdfs")
+async def regenerate_all_pdfs(db: AsyncSession = Depends(get_db)):
+    from app.models.database import Report
+    from onepager.render_output import render_to_html, render_to_pdf
+    import os
+    from pathlib import Path
+    
+    result = await db.execute(select(Report))
+    reports = result.scalars().all()
+    
+    updated = 0
+    errors = []
+    for r in reports:
+        try:
+            if r.report_markdown and r.report_pdf_path:
+                html_content = render_to_html(r.report_markdown, title="Product Intelligence Report")
+                # Force create parent dirs
+                Path(r.report_pdf_path).parent.mkdir(parents=True, exist_ok=True)
+                render_to_pdf(html_content, r.report_pdf_path)
+                updated += 1
+                if r.report_html_path:
+                    with open(r.report_html_path, "w", encoding="utf-8") as f:
+                        f.write(html_content)
+        except Exception as e:
+            errors.append(str(e))
+    
+    return {"message": f"Successfully regenerated {updated} PDF reports. Errors: {errors}"}
+
+
+# ---------------------------------------------------------------------------
+# Download PDF Report
+# ---------------------------------------------------------------------------
+
+@router.get("/{doc_id}/pdf")
+async def download_pdf_report(
+    doc_id: int,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Download the generated PDF report for a specific document."""
+    import os
+    result = await db.execute(
+        select(Document).where(Document.id == doc_id, Document.owner_id == user.id)
+    )
+    doc = result.scalar_one_or_none()
+    
+    if doc is None:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    report_result = await db.execute(
+        select(Report).where(Report.document_id == doc_id)
+    )
+    report = report_result.scalar_one_or_none()
+    
+    if not report or not report.report_pdf_path or not os.path.exists(report.report_pdf_path):
+        raise HTTPException(status_code=404, detail="PDF report not found or not generated yet")
+        
+    return FileResponse(
+        path=report.report_pdf_path,
+        filename=f"Report_{doc.original_filename}.pdf",
+        media_type="application/pdf"
+    )

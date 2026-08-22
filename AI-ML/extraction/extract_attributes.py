@@ -25,8 +25,7 @@ extract structured product information from technical documents such as datashee
 spec sheets, catalogs, and product descriptions.
 
 Rules:
-- Extract every technical attribute you can find (voltage, current, dimensions,
-  weight, material, certifications, version, license, compatibility, etc.)
+- Extract every relevant technical attribute you can find. Note: Do not invent missing attributes just because they are common. If an attribute is missing from the document, simply omit it.
 - For each attribute, include the exact source text snippet where you found it
 - If a value has a unit, separate the numeric value and unit
 - If you are uncertain about a value, still extract it but note lower confidence

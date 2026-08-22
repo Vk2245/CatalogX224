@@ -43,7 +43,7 @@ export default function DashboardPage() {
         });
         if (res.ok) {
           const data = await res.json();
-          setRecords(data);
+          setRecords(data.records || []);
         }
       } catch (err) {
         console.error("Failed to fetch records:", err);

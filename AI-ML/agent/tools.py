@@ -69,31 +69,36 @@ def scrape_with_playwright(
     Handles JavaScript-heavy pages that simple HTTP requests can't.
     """
     try:
-        from playwright.sync_api import sync_playwright
+        import concurrent.futures
 
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
-            page = browser.new_page()
-            page.goto(url, timeout=timeout_ms, wait_until="domcontentloaded")
+        def _do_scrape():
+            from playwright.sync_api import sync_playwright
+            with sync_playwright() as p:
+                browser = p.chromium.launch(headless=True)
+                page = browser.new_page()
+                page.goto(url, timeout=timeout_ms, wait_until="domcontentloaded")
 
-            # Wait a bit for dynamic content
-            page.wait_for_timeout(2000)
+                # Wait a bit for dynamic content
+                page.wait_for_timeout(2000)
 
-            # Extract main content text
-            content = page.inner_text("body")
+                # Extract main content text
+                content = page.inner_text("body")
 
-            # Trim to reasonable size (avoid token bloat)
-            content = content[:10000]
+                # Trim to reasonable size (avoid token bloat)
+                content = content[:10000]
 
-            browser.close()
+                browser.close()
 
-            return {
-                "content": content,
-                "url": url,
-                "success": True,
-                "source": "playwright",
-                "char_count": len(content),
-            }
+                return {
+                    "content": content,
+                    "url": url,
+                    "success": True,
+                    "source": "playwright",
+                    "char_count": len(content),
+                }
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+            return pool.submit(_do_scrape).result()
 
     except Exception as e:
         print(f"[Playwright] Scrape failed for {url}: {e}")
@@ -251,7 +256,8 @@ For each missing specification, provide:
 If you don't know a value, say "unknown" rather than guessing.
 Format as a structured list."""
 
-        response = get_completion(prompt, provider="gemini")
+        from config.settings import DEFAULT_PROVIDER
+        response = get_completion(prompt, provider=DEFAULT_PROVIDER)
 
         return {
             "content": response,

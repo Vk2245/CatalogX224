@@ -32,7 +32,7 @@ from config.llm_client import get_structured_output
 from config.toon_utils import wrap_for_prompt
 from extraction.schema_models import ProductAttribute
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 # ---------------------------------------------------------------------------
@@ -77,8 +77,16 @@ class ExtractedSpecs(BaseModel):
     """Specs extracted from scraped content."""
 
     attributes: list[ProductAttribute] = Field(
+        default_factory=list,
         description="Product attributes found in the scraped content"
     )
+
+    @field_validator("attributes", mode="before")
+    @classmethod
+    def ensure_list(cls, v):
+        if isinstance(v, dict):
+            return [v]
+        return v
 
 
 def extract_from_content(
@@ -97,7 +105,7 @@ Target attributes: {attrs_str}
 
 Content:
 ---
-{content[:3000]}
+{content[:2000]}
 ---
 
 Extract ONLY the attributes listed above. For each, provide:
@@ -109,10 +117,12 @@ Extract ONLY the attributes listed above. For each, provide:
     try:
         result = get_structured_output(
             prompt=prompt,
-            response_model=list[ProductAttribute],
+            response_model=ExtractedSpecs,
             provider=provider,
         )
-        return [a.model_dump() for a in result]
+        if result and hasattr(result, "attributes"):
+            return [a.model_dump() for a in result.attributes]
+        return []
     except Exception as e:
         print(f"[Extract] Failed: {e}")
         return []
@@ -325,7 +335,8 @@ def extract_attributes_node(state: ResearchState) -> dict:
 
     # Determine provider based on source
     source = state.get("scrape_source", "")
-    provider = "gemini" if source == "gemini_knowledge" else "local"
+    from config.settings import DEFAULT_PROVIDER
+    provider = DEFAULT_PROVIDER
 
     extracted = extract_from_content(content, product, missing, provider=provider)
 

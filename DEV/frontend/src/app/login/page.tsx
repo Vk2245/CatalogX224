@@ -61,6 +61,38 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemoLogin = async (role: "admin" | "user") => {
+    setIsLoading(true);
+    setError("");
+    try {
+      const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API}/api/auth/demo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Demo login failed");
+      }
+
+      const data = await res.json();
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email: role === "admin" ? "admin@catalogx.io" : "demo@catalogx.io",
+          role,
+          username: data.username,
+        })
+      );
+      router.push(role === "admin" ? "/admin" : "/dashboard");
+    } catch (err: any) {
+      setError(err.message || "Demo login failed");
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-[calc(100vh-8rem)] flex items-center justify-center px-6 py-16">
       <motion.div
@@ -167,32 +199,23 @@ export default function LoginPage() {
           {/* Quick Role Access */}
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => {
-                localStorage.setItem("token", "demo_admin_token");
-                localStorage.setItem(
-                  "user",
-                  JSON.stringify({ email: "admin@catalogx.io", role: "admin", username: "Admin" })
-                );
-                router.push("/admin");
-              }}
-              className="flex items-center gap-2 justify-center btn-ghost text-xs px-4 py-2.5 rounded-xl"
+              type="button"
+              onClick={() => handleDemoLogin("admin")}
+              disabled={isLoading}
+              className="flex items-center gap-2 justify-center btn-ghost text-xs px-4 py-2.5 rounded-xl disabled:opacity-50"
             >
               <ShieldCheck size={14} className="text-emerald-400" /> Admin Demo
             </button>
             <button
-              onClick={() => {
-                localStorage.setItem("token", "demo_user_token");
-                localStorage.setItem(
-                  "user",
-                  JSON.stringify({ email: "demo@catalogx.io", role: "user", username: "Demo User" })
-                );
-                router.push("/dashboard");
-              }}
-              className="flex items-center gap-2 justify-center btn-ghost text-xs px-4 py-2.5 rounded-xl"
+              type="button"
+              onClick={() => handleDemoLogin("user")}
+              disabled={isLoading}
+              className="flex items-center gap-2 justify-center btn-ghost text-xs px-4 py-2.5 rounded-xl disabled:opacity-50"
             >
               <Building2 size={14} className="text-blue-400" /> User Demo
             </button>
           </div>
+
         </div>
 
         {/* Register Link */}

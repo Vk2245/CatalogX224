@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import AnimatedPipeline from "@/components/AnimatedPipeline";
 
 interface LogEntry {
   id: string;
@@ -11,18 +12,22 @@ interface LogEntry {
   timestamp: string;
 }
 
-export default function ProcessPage({ params }: { params: { id: string } }) {
+export default function ProcessPage({ params }: { params: { slug: string } }) {
+  const documentId = params.slug.split("-").pop();
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [status, setStatus] = useState<"connecting" | "processing" | "completed" | "error">("connecting");
   const [errorMsg, setErrorMsg] = useState("");
   
   const router = useRouter();
-  const logsEndRef = useRef<HTMLDivElement>(null);
+  const logsContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (logsEndRef.current) {
-      logsEndRef.current.scrollIntoView({ behavior: "smooth" });
+    if (logsContainerRef.current) {
+      logsContainerRef.current.scrollTo({
+        top: logsContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
     }
   }, [logs]);
 
@@ -31,7 +36,7 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
     
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
     const token = localStorage.getItem("token") || "";
-    const eventSource = new EventSource(`${API_URL}/api/process/${params.id}?token=${token}`);
+    const eventSource = new EventSource(`${API_URL}/api/process/${documentId}?token=${token}`);
     
     eventSource.onmessage = (event) => {
       try {
@@ -53,7 +58,7 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
           eventSource.close();
           setStatus("completed");
           setTimeout(() => {
-            router.push(`/record/${params.id}`);
+            router.push(`/record/${documentId}`);
           }, 1500);
         } else if (data.status === "error") {
           eventSource.close();
@@ -75,11 +80,11 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
     return () => {
       eventSource.close();
     };
-  }, [params.id, router]);
+  }, [documentId, router]);
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-8 flex flex-col items-center relative z-10">
-      <div className="text-center mb-8">
+    <div className="w-full max-w-xl mx-auto mt-4 flex flex-col items-center relative z-10 scale-[0.8] origin-top">
+      <div className="text-center mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-[var(--foreground)] mb-2">
           Analyzing Product Data
         </h1>
@@ -110,11 +115,17 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
           </div>
         </div>
 
+        {/* Pipeline Animation */}
+        <div className="mb-6">
+          <AnimatedPipeline progress={progress} />
+        </div>
+
         {/* Live Logs */}
-        <div className="bg-black/40 rounded-3xl p-6 h-72 overflow-y-auto border border-white/5 relative shadow-inner">
-          <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-b from-black/60 to-transparent z-10 rounded-t-3xl pointer-events-none"></div>
-          
-          <div className="flex flex-col gap-4 font-mono text-sm py-4">
+        <div 
+          ref={logsContainerRef}
+          className="bg-black/5 dark:bg-black/40 rounded-2xl p-6 h-48 overflow-y-auto border border-black/5 dark:border-white/5 shadow-inner"
+        >
+          <div className="flex flex-col gap-4 font-mono text-sm">
             <AnimatePresence initial={false}>
               {logs.map((log) => (
                 <motion.div
@@ -126,14 +137,11 @@ export default function ProcessPage({ params }: { params: { id: string } }) {
                   <span className="text-[var(--secondary)] whitespace-nowrap shrink-0">
                     [{log.timestamp}]
                   </span>
-                  <span className="leading-relaxed text-gray-300">{log.message}</span>
+                  <span className="leading-relaxed text-[var(--foreground)]">{log.message}</span>
                 </motion.div>
               ))}
             </AnimatePresence>
-            <div ref={logsEndRef} className="h-4" />
           </div>
-          
-          <div className="absolute bottom-0 left-0 w-full h-12 bg-gradient-to-t from-black/80 to-transparent z-10 rounded-b-3xl pointer-events-none"></div>
         </div>
       </div>
       

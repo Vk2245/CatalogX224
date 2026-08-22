@@ -42,21 +42,6 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 # ---------------------------------------------------------------------------
-# Ollama (local, single primary provider for everything)
-# ---------------------------------------------------------------------------
-
-OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434")
-OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "qwen3.5:4b")
-OLLAMA_VISION_MODEL: str = os.getenv("OLLAMA_VISION_MODEL", "llava-phi3")
-OLLAMA_EMBED_MODEL: str = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
-
-# Local vision embedding model (runs via transformers, no API)
-VISION_EMBED_MODEL: str = os.getenv(
-    "VISION_EMBED_MODEL", "nomic-ai/nomic-embed-vision-v1.5"
-)
-
-
-# ---------------------------------------------------------------------------
 # vLLM (high-throughput local inference, via OpenAI API format)
 # ---------------------------------------------------------------------------
 
@@ -85,8 +70,8 @@ GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini/gemini-2.5-flash")
 # ---------------------------------------------------------------------------
 
 PROVIDER_MODELS: dict[str, str] = {
-    "local": f"ollama/{OLLAMA_MODEL}",
-    "local_vision": f"ollama/{OLLAMA_VISION_MODEL}",
+    "local": f"openai/{VLLM_MODEL}",
+    "local_vision": f"openai/{VLLM_MODEL}",
     "vllm": f"openai/{VLLM_MODEL}",
     "groq": GROQ_MODEL,
     "gemini": GEMINI_MODEL,
@@ -94,3 +79,4 @@ PROVIDER_MODELS: dict[str, str] = {
 
 DEFAULT_PROVIDER: str = os.getenv("DEFAULT_PROVIDER", "vllm")
 VISION_PROVIDER: str = os.getenv("VISION_PROVIDER", "vllm")
+

@@ -18,7 +18,6 @@ from pydantic import BaseModel
 from config.settings import (
     PROVIDER_MODELS,
     DEFAULT_PROVIDER,
-    OLLAMA_BASE_URL,
     VLLM_BASE_URL,
     GROQ_API_KEY,
     GEMINI_API_KEY,
@@ -45,8 +44,8 @@ def _build_kwargs(provider: str) -> dict[str, Any]:
     kwargs: dict[str, Any] = {}
 
     if provider == "local":
-        kwargs["api_base"] = OLLAMA_BASE_URL
-        kwargs["num_ctx"] = 8192  # Increase context window for Ollama
+        kwargs["api_base"] = VLLM_BASE_URL
+        kwargs["api_key"] = "dummy-key"
     elif provider == "vllm":
         kwargs["api_base"] = VLLM_BASE_URL
         kwargs["api_key"] = "dummy-key"  # vLLM/OpenAI format requires a dummy key
@@ -129,7 +128,7 @@ def get_structured_output(
     # Create an instructor-patched client via litellm
     # Ollama and small vLLM models often fail with TOOLS mode, so use MD_JSON mode
     if provider in ("local", "vllm"):
-        client = instructor.from_litellm(litellm.completion, mode=instructor.Mode.MD_JSON)
+        client = instructor.from_litellm(litellm.completion, mode=instructor.Mode.JSON_SCHEMA)
     else:
         client = instructor.from_litellm(litellm.completion)
 
@@ -138,7 +137,8 @@ def get_structured_output(
         # Rough estimate: ~4 chars per token
         total_prompt_chars = sum(len(m["content"]) for m in messages)
         estimated_input_tokens = total_prompt_chars // 3  # conservative estimate
-        model_context_limit = 8192
+        # Qwen2-VL supports 20k context, ensure we don't inappropriately clamp
+        model_context_limit = 20480
         safe_max_tokens = min(max_tokens, model_context_limit - estimated_input_tokens - 100)
         safe_max_tokens = max(safe_max_tokens, 256)  # floor to avoid tiny outputs
     else:

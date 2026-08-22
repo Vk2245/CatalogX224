@@ -37,7 +37,9 @@ def generate_report_markdown(
     # Header
     lines.append("# Product Intelligence Report")
     lines.append("")
-    lines.append(f"**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+    from datetime import timedelta
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    lines.append(f"**Generated:** {datetime.now(ist_tz).strftime('%Y-%m-%d %I:%M %p IST')}")
     lines.append(f"**Source:** {record.get('source_file', 'N/A')}")
     lines.append("")
 

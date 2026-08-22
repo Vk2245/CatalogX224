@@ -79,9 +79,10 @@ export default function RegisterPage() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.detail || "Registration failed");
       }
-
+      const data = await res.json();
+      
       // Auto-login after registration
-      localStorage.setItem("token", "new_user_token");
+      localStorage.setItem("token", data.access_token);
       localStorage.setItem(
         "user",
         JSON.stringify({ email, username, industry, role: "user" })

@@ -24,6 +24,7 @@ import {
   AlertTriangle,
   FileOutput,
 } from "lucide-react";
+import AnimatedPipeline from "@/components/AnimatedPipeline";
 
 const stats = [
   { label: "Industries Supported", value: "8+", icon: Globe2 },
@@ -272,52 +273,7 @@ export default function Home() {
           </p>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="glass-panel rounded-2xl p-6 overflow-x-auto"
-        >
-          <div className="flex items-center justify-between min-w-[700px] gap-1">
-            {pipelineStages.map((stage, i) => (
-              <motion.div
-                key={stage.label}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
-                className="flex items-center gap-1"
-              >
-                <div className="flex flex-col items-center group cursor-default">
-                  <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center mb-2 transition-all duration-300 group-hover:scale-110"
-                    style={{
-                      background: `${stage.color}15`,
-                      border: `1px solid ${stage.color}30`,
-                      boxShadow: `0 0 20px ${stage.color}10`,
-                    }}
-                  >
-                    <stage.icon size={18} style={{ color: stage.color }} />
-                  </div>
-                  <span className="text-[10px] font-medium text-[var(--secondary)] text-center leading-tight max-w-[72px] group-hover:text-[var(--foreground)] transition-colors">
-                    {stage.label}
-                  </span>
-                </div>
-                {i < pipelineStages.length - 1 && (
-                  <div className="flex-shrink-0 mx-0.5">
-                    <div
-                      className="h-[2px] w-6 rounded-full pipeline-glow"
-                      style={{
-                        background: `linear-gradient(90deg, ${stage.color}60, ${pipelineStages[i + 1].color}60)`,
-                        boxShadow: `0 0 8px ${stage.color}30`,
-                      }}
-                    />
-                  </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        <AnimatedPipeline progress={100} />
       </section>
 
       {/* ─── How It Works ─── */}

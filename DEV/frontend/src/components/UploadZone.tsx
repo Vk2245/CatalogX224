@@ -74,7 +74,8 @@ export default function UploadZone() {
       });
       if (!res.ok) throw new Error(`Upload failed (${res.status})`);
       const data = await res.json();
-      router.push(`/process/${data.document_id}`);
+      const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_").replace(/\.pdf$/i, "");
+      router.push(`/process/${safeName}-${data.document_id}`);
     } catch (err: any) {
       setError(err.message || "Unexpected error.");
       setIsUploading(false);

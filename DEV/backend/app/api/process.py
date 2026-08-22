@@ -19,7 +19,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Request
 from fastapi.responses import StreamingResponse
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.database import Document, ProductRecord, Report, AuditLog, get_db, async_session_factory
@@ -171,11 +171,17 @@ async def process_document(
                 if progress == 100 and data:
                     # Save results to database
                     record_data = data.get("record", {})
+                    record_data["risks_summary"] = data.get("risks", {})
+                    record_data["agent_log"] = data.get("agent_log", [])
                     content_hash = compute_content_hash(record_data)
 
                     async with async_session_factory() as bg_db:
                         bg_doc = await bg_db.get(Document, doc_id)
                         if bg_doc:
+                            # Delete existing records to allow re-processing and prevent IntegrityError
+                            await bg_db.execute(delete(ProductRecord).where(ProductRecord.document_id == bg_doc.id))
+                            await bg_db.execute(delete(Report).where(Report.document_id == bg_doc.id))
+                            
                             product_record = ProductRecord(
                                 document_id=bg_doc.id,
                                 product_name=record_data.get("product_name", ""),
@@ -213,7 +219,8 @@ async def process_document(
                             ))
                             await bg_db.commit()
 
-                    # Add content hash to SSE response
+                    # Add content hash and complete status to SSE response
+                    event_data["status"] = "completed"
                     event_data["data"] = {
                         "record": record_data,
                         "risks": data.get("risks", {}),

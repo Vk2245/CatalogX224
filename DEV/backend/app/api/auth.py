@@ -43,6 +43,9 @@ class TokenResponse(BaseModel):
     user_id: int
     username: str
 
+class DemoLoginRequest(BaseModel):
+    role: str
+
 
 class UserResponse(BaseModel):
     id: int
@@ -183,6 +186,30 @@ async def login(
         access_token=token,
         user_id=user.id,
         username=user.username,
+    )
+
+
+@router.post("/demo", response_model=TokenResponse)
+async def demo_login(
+    request: DemoLoginRequest,
+    req: Request,
+):
+    """Generate a valid token for demo purposes without hitting the DB."""
+    if request.role == "admin":
+        email = "admin@catalogx.io"
+        username = "Admin"
+        user_id = 9999
+    else:
+        email = "demo@catalogx.io"
+        username = "Demo User"
+        user_id = 9998
+        
+    token = create_access_token({"sub": email, "user_id": user_id, "role": request.role})
+    
+    return TokenResponse(
+        access_token=token,
+        user_id=user_id,
+        username=username,
     )
 
 
